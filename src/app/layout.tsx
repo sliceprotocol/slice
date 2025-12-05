@@ -1,14 +1,28 @@
 import type { Metadata } from "next";
 
-
-import { headers } from 'next/headers' // added
-import './globals.css';
-import ContextProvider from '@/context'
+import { headers } from "next/headers"; // added
+import "./globals.css";
+import ContextProvider from "@/contexts";
+import { XOContractsProvider } from "@/providers/XOContractsProvider";
+import { EmbeddedProvider } from "@/providers/EmbeddedProvider";
+import { Geist, Geist_Mono } from "next/font/google";
+import { TimerProvider } from "@/contexts/TimerContext";
+import { WalletProvider } from "@/providers/WalletProvider";
 
 export const metadata: Metadata = {
-  title: "AppKit in Next.js + wagmi",
-  description: "AppKit example dApp",
+  title: "Slice",
+  description: "Earn funds while solving disputes",
 };
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
 
 export default async function RootLayout({
   children,
@@ -16,12 +30,22 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const headersData = await headers();
-  const cookies = headersData.get('cookie');
+  const cookies = headersData.get("cookie");
 
   return (
     <html lang="en">
-      <body>
-        <ContextProvider cookies={cookies}>{children}</ContextProvider>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased flex justify-center min-h-screen bg-gray-100`}
+      >
+        <EmbeddedProvider>
+          <XOContractsProvider>
+            <TimerProvider>
+              <WalletProvider>
+                <ContextProvider cookies={cookies}>{children}</ContextProvider>
+              </WalletProvider>
+            </TimerProvider>
+          </XOContractsProvider>
+        </EmbeddedProvider>
       </body>
     </html>
   );
