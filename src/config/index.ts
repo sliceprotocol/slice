@@ -14,7 +14,7 @@ export const networks: [typeof baseSepolia, typeof base] = [baseSepolia, base];
 export const wagmiAdapter = new WagmiAdapter({
   storage: createStorage({
     storage: cookieStorage,
-  }),
+  }) as any,
   ssr: true,
   projectId: projectId as string,
   networks,
