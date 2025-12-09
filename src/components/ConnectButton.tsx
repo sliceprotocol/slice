@@ -6,23 +6,27 @@ import { useEmbedded } from "@/providers/EmbeddedProvider";
 import { toast } from "sonner";
 import { Loader2, Copy, Check, Wallet, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAppKit } from "@reown/appkit/react";
 
 const XOConnectButton = () => {
   const { isEmbedded } = useEmbedded();
   const { connect, address } = useXOContracts();
+  // 2. Get the open function
+  const { open } = useAppKit();
+
   const [copied, setCopied] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // 1. Web Mode: Use Standard AppKit UI
-  if (!isEmbedded) {
-    return <appkit-button />;
-  }
-
-  // 2. Embedded Mode: Use Custom UI Logic
   const handleConnect = async () => {
     setIsLoading(true);
     try {
-      await connect();
+      if (isEmbedded) {
+        // Embedded mode: Use XO Connect logic
+        await connect();
+      } else {
+        // Web mode: Open the Reown/AppKit modal
+        await open();
+      }
     } catch (error) {
       console.error(error);
     } finally {
@@ -30,7 +34,18 @@ const XOConnectButton = () => {
     }
   };
 
-  const copyToClipboard = () => {
+  const handleAccountClick = async () => {
+    if (!isEmbedded) {
+      // In web mode, clicking the address button opens the AppKit Account view
+      // (This lets users disconnect or switch networks)
+      await open();
+    }
+  };
+
+  const copyToClipboard = (e: React.MouseEvent) => {
+    // Prevent opening the modal when clicking copy
+    e.stopPropagation();
+
     if (address) {
       navigator.clipboard.writeText(address);
       setCopied(true);
@@ -43,7 +58,9 @@ const XOConnectButton = () => {
     ? `${address.slice(0, 5)}...${address.slice(-4)}`
     : "";
 
-  // Embedded Connected State
+  // ---------------------------------------------------------
+  // CONNECTED STATE
+  // ---------------------------------------------------------
   if (address) {
     return (
       <div className="flex items-center gap-3">
@@ -59,6 +76,7 @@ const XOConnectButton = () => {
         <div className="relative group inline-block">
           <Button
             variant="outline"
+            onClick={handleAccountClick} // Opens modal on web, does nothing on embedded
             className="h-11 gap-3 rounded-2xl border-gray-200 bg-white px-5 text-[#1b1c23] shadow-md hover:bg-gray-50 hover:text-[#1b1c23]"
           >
             {/* Green Status Dot */}
@@ -72,7 +90,7 @@ const XOConnectButton = () => {
             </span>
           </Button>
 
-          {/* Hover Card / Popover */}
+          {/* Custom Hover Card (Optional - you might want to remove this for Web Mode if you prefer the AppKit modal) */}
           <div className="absolute right-0 top-full z-50 mt-2 w-72 translate-y-2 opacity-0 invisible transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100 group-hover:visible">
             <div className="rounded-2xl border border-gray-100 bg-white p-4 text-popover-foreground shadow-xl">
               <div className="space-y-4">
@@ -113,7 +131,9 @@ const XOConnectButton = () => {
     );
   }
 
-  // Embedded Disconnected State
+  // ---------------------------------------------------------
+  // DISCONNECTED STATE
+  // ---------------------------------------------------------
   return (
     <Button
       onClick={handleConnect}
