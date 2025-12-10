@@ -1,30 +1,45 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useXOContracts } from "@/providers/XOContractsProvider";
 import { useEmbedded } from "@/providers/EmbeddedProvider";
 import { toast } from "sonner";
-import { Loader2, Copy, Check, Wallet, Bell } from "lucide-react";
+import { Loader2, Copy, Check, Wallet, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAppKit } from "@reown/appkit/react";
 
 const XOConnectButton = () => {
   const { isEmbedded } = useEmbedded();
-  const { connect, address } = useXOContracts();
-  // 2. Get the open function
+  const { connect, disconnect, address } = useXOContracts();
   const { open } = useAppKit();
 
   const [copied, setCopied] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Add state to manually toggle dropdown (essential for touch/embedded)
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const handleConnect = async () => {
     setIsLoading(true);
     try {
       if (isEmbedded) {
-        // Embedded mode: Use XO Connect logic
         await connect();
       } else {
-        // Web mode: Open the Reown/AppKit modal
         await open();
       }
     } catch (error) {
@@ -35,17 +50,22 @@ const XOConnectButton = () => {
   };
 
   const handleAccountClick = async () => {
-    if (!isEmbedded) {
-      // In web mode, clicking the address button opens the AppKit Account view
-      // (This lets users disconnect or switch networks)
+    if (isEmbedded) {
+      // Toggle custom dropdown for embedded users
+      setShowDropdown(!showDropdown);
+    } else {
+      // Open AppKit modal for web users
       await open();
     }
   };
 
-  const copyToClipboard = (e: React.MouseEvent) => {
-    // Prevent opening the modal when clicking copy
-    e.stopPropagation();
+  const handleDisconnect = async () => {
+    await disconnect();
+    setShowDropdown(false);
+  };
 
+  const copyToClipboard = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (address) {
       navigator.clipboard.writeText(address);
       setCopied(true);
@@ -58,31 +78,18 @@ const XOConnectButton = () => {
     ? `${address.slice(0, 5)}...${address.slice(-4)}`
     : "";
 
-  // ---------------------------------------------------------
-  // CONNECTED STATE
-  // ---------------------------------------------------------
   if (address) {
     return (
-      <div className="flex items-center gap-3">
-        {/* Notification Bell Button */}
-        <Button
-          size="icon"
-          className="h-11 w-11 rounded-2xl bg-[#1b1c23] text-white hover:bg-[#2c2d33] shadow-md border-0"
-        >
-          <Bell className="h-5 w-5" />
-        </Button>
-
-        {/* Address Button */}
-        <div className="relative group inline-block">
+      <div className="flex items-center gap-3" ref={dropdownRef}>
+        <div className="relative inline-block">
           <Button
             variant="outline"
-            onClick={handleAccountClick} // Opens modal on web, does nothing on embedded
+            onClick={handleAccountClick}
             className="h-11 gap-3 rounded-2xl border-gray-200 bg-white px-5 text-[#1b1c23] shadow-md hover:bg-gray-50 hover:text-[#1b1c23]"
           >
-            {/* Green Status Dot */}
             <div className="relative flex h-2.5 w-2.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#8c8fff] opacity-75"></span>
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#8c8fff]"></span>
             </div>
 
             <span className="font-manrope text-sm font-extrabold tracking-tight">
@@ -90,15 +97,18 @@ const XOConnectButton = () => {
             </span>
           </Button>
 
-          {/* Custom Hover Card (Optional - you might want to remove this for Web Mode if you prefer the AppKit modal) */}
-          <div className="absolute right-0 top-full z-50 mt-2 w-72 translate-y-2 opacity-0 invisible transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100 group-hover:visible">
+          {/* Custom Dropdown */}
+          <div
+            className={`absolute right-0 top-full z-50 mt-2 w-72 translate-y-2 transition-all duration-200 origin-top-right
+              ${showDropdown ? "opacity-100 visible translate-y-0 scale-100" : "opacity-0 invisible translate-y-2 scale-95 pointer-events-none"}`}
+          >
             <div className="rounded-2xl border border-gray-100 bg-white p-4 text-popover-foreground shadow-xl">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h4 className="font-manrope text-sm font-bold text-[#1b1c23]">
                     Wallet Connected
                   </h4>
-                  <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold uppercase text-emerald-600">
+                  <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold uppercase text-[#8c8fff]">
                     Active
                   </span>
                 </div>
@@ -107,22 +117,36 @@ const XOConnectButton = () => {
                   {address}
                 </div>
 
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  className="h-9 w-full justify-center rounded-xl bg-[#1b1c23] text-white hover:bg-[#2c2d33]"
-                  onClick={copyToClipboard}
-                >
-                  {copied ? (
-                    <>
-                      <Check className="mr-2 h-3.5 w-3.5" /> Copied
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="mr-2 h-3.5 w-3.5" /> Copy Address
-                    </>
+                <div className="flex flex-col gap-2">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="h-9 w-full justify-center rounded-xl bg-[#1b1c23] text-white hover:bg-[#2c2d33]"
+                    onClick={copyToClipboard}
+                  >
+                    {copied ? (
+                      <>
+                        <Check className="mr-2 h-3.5 w-3.5" /> Copied
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="mr-2 h-3.5 w-3.5" /> Copy Address
+                      </>
+                    )}
+                  </Button>
+
+                  {/* FIX: Add Disconnect button for Embedded users */}
+                  {isEmbedded && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-9 w-full justify-center rounded-xl text-red-500 hover:bg-red-50 hover:text-red-600"
+                      onClick={handleDisconnect}
+                    >
+                      <LogOut className="mr-2 h-3.5 w-3.5" /> Disconnect
+                    </Button>
                   )}
-                </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -131,9 +155,6 @@ const XOConnectButton = () => {
     );
   }
 
-  // ---------------------------------------------------------
-  // DISCONNECTED STATE
-  // ---------------------------------------------------------
   return (
     <Button
       onClick={handleConnect}

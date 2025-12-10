@@ -1,29 +1,27 @@
 "use client";
 
 import React from "react";
-import { useAccount, useBalance } from "wagmi";
+import { useBalance } from "wagmi";
 import { DepositIcon, SendIcon } from "./icons/ActionIcons";
 import styles from "./BalanceCard.module.css";
+import { useXOContracts } from "@/providers/XOContractsProvider";
 
 export const BalanceCard: React.FC = () => {
-  const { address, isConnected } = useAccount();
+  const { address } = useXOContracts();
 
   // Fetch native balance (ETH/MATIC etc depending on chain)
   const { data, isError, isLoading } = useBalance({
-    address: address,
+    address: address as `0x${string}` | undefined,
   });
 
-  // Format balance: if loading/error/not connected, show appropriate state
-  // Otherwise format to 4 decimal places
   const displayBalance = React.useMemo(() => {
-    if (!isConnected) return "---";
+    if (!address) return "---";
     if (isLoading) return "Loading...";
     if (isError || !data) return "Error";
 
-    // Parse and truncate to 4 decimals
     const balance = parseFloat(data.formatted).toFixed(4);
     return `${balance} ${data.symbol}`;
-  }, [isConnected, isLoading, isError, data]);
+  }, [address, isLoading, isError, data]);
 
   return (
     <div className={styles.card}>
