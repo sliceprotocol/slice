@@ -3,7 +3,6 @@ import type { Dispute } from "./DisputesList";
 import { CrowdfundingIcon, PersonIcon, VoteIcon } from "./icons/BadgeIcons";
 import { ApproveIcon, RejectIcon } from "./icons/Icon";
 import { StarIcon } from "./icons/BadgeIcons";
-import styles from "./DisputeCard.module.css";
 
 interface DisputeCardProps {
   dispute: Dispute;
@@ -11,35 +10,37 @@ interface DisputeCardProps {
 
 export const DisputeCard: React.FC<DisputeCardProps> = ({ dispute }) => {
   return (
-    <div className={styles.card}>
-      <div className={styles.header}>
-        <div className={styles.iconContainer}>
+    <div className="bg-white rounded-[18px] shadow-[0px_2px_4px_0px_rgba(27,28,35,0.1)] p-[22px] relative w-full h-[261px] flex flex-col justify-between box-border shrink-0">
+      {/* Header */}
+      <div className="flex items-start gap-[17px] mb-5 shrink-0">
+        {/* Icon Container */}
+        <div className="w-[55px] h-[55px] shrink-0">
           {dispute.icon ? (
             <img
               src={dispute.icon}
               alt={dispute.title}
-              className={styles.icon}
+              className="w-full h-full rounded-[14px] object-cover"
             />
           ) : (
-            <div className={styles.defaultIcon}>
-              {/* Stellar Community Fund usa el SVG descargado */}
+            <div className="w-full h-full rounded-[14px] bg-[#f5f6f9] flex items-center justify-center">
+              {/* Default Icons logic */}
               {dispute.id === "1" ? (
                 <img
                   src="/images/icons/stellar-fund-icon.svg"
                   alt="Stellar Community Fund"
-                  className={styles.icon}
+                  className="w-full h-full"
                 />
               ) : dispute.id === "2" ? (
                 <img
                   src="/images/icons/ethereum-icon.png"
                   alt="Ethereum Foundation"
-                  className={styles.icon}
+                  className="w-full h-full object-cover rounded-[14px]"
                 />
               ) : dispute.id === "3" ? (
                 <img
                   src="/images/icons/lionstar-icon.png"
                   alt="Lionstar"
-                  className={styles.icon}
+                  className="w-full h-full object-cover rounded-[14px]"
                 />
               ) : (
                 <svg width="55" height="55" viewBox="0 0 55 55" fill="none">
@@ -57,64 +58,68 @@ export const DisputeCard: React.FC<DisputeCardProps> = ({ dispute }) => {
           )}
         </div>
 
-        <div className={styles.titleSection}>
-          <h3 className={styles.title}>{dispute.title}</h3>
-          <div className={styles.badges}>
-            <span className={styles.badge}>
-              <CrowdfundingIcon size={9} color="#8c8fff" />
+        {/* Title Section */}
+        <div className="flex-1 min-w-0">
+          <h3 className="font-manrope font-extrabold text-[15px] leading-none text-[#1b1c23] tracking-[-0.3px] m-0 mb-2.5">
+            {dispute.title}
+          </h3>
+          <div className="flex gap-2 items-center flex-wrap">
+            <span className="bg-[rgba(140,143,255,0.2)] text-[#1b1c23] px-3 h-[23px] rounded-[11.5px] font-manrope font-extrabold text-[10px] tracking-[-0.2px] leading-none inline-flex items-center justify-center gap-1.5 whitespace-nowrap">
+              <CrowdfundingIcon size={9} color="#8c8fff" className="shrink-0" />
               {dispute.category}
             </span>
-            <span className={styles.badge}>
-              <PersonIcon size={10} color="#8c8fff" />
+            <span className="bg-[rgba(140,143,255,0.2)] text-[#1b1c23] px-3 h-[23px] rounded-[11.5px] font-manrope font-extrabold text-[10px] tracking-[-0.2px] leading-none inline-flex items-center justify-center gap-1.5 whitespace-nowrap">
+              <PersonIcon size={10} color="#8c8fff" className="shrink-0" />
               {dispute.votesCount}/{dispute.totalVotes} votes
             </span>
           </div>
         </div>
       </div>
 
-      <div className={styles.content}>
-        <div className={styles.voteSection}>
-          <div className={styles.voteLabel}>
+      {/* Content (Vote Section) */}
+      <div className="bg-[#f5f6f9] rounded-xl p-[22px] w-full h-[111px] flex flex-col justify-start shrink-0 box-border">
+        <div className="flex flex-col gap-2.5 w-full flex-1">
+          <div className="font-manrope font-extrabold text-xs text-[#1b1c23] tracking-[-0.24px] flex items-center gap-1.5">
             <VoteIcon size={16} color="#1b1c23" />
             Your vote was:
           </div>
-          <div className={styles.voters}>
+          <div className="flex gap-[11px] items-center justify-start w-full">
             {dispute.voters.map((voter, index) => (
-              <div key={index} className={styles.voterCard}>
-                <div className={styles.voterAvatar}>
+              <div
+                key={index}
+                className="relative w-[134px] h-[43px] bg-white rounded-lg flex items-center gap-2 p-[9px_10px] shrink-0 box-border"
+              >
+                <div className="w-[25px] h-[25px] rounded-full overflow-hidden shrink-0 bg-[#8c8fff] flex items-center justify-center relative">
                   {voter.avatar ? (
                     <>
                       <img
                         src={voter.avatar}
                         alt={voter.name}
+                        className="w-full h-full object-cover absolute top-0 left-0"
                         onError={(e) => {
-                          // Si la imagen no se carga, ocultar img y mostrar placeholder
                           const target = e.target as HTMLImageElement;
                           target.style.display = "none";
                           const placeholder =
                             target.parentElement?.querySelector(
-                              `.${styles.avatarPlaceholder}`,
+                              ".avatar-placeholder",
                             ) as HTMLElement;
-                          if (placeholder) {
-                            placeholder.style.display = "flex";
-                          }
+                          if (placeholder) placeholder.style.display = "flex";
                         }}
                       />
-                      <div
-                        className={styles.avatarPlaceholder}
-                        style={{ display: "none" }}
-                      >
+                      <div className="avatar-placeholder w-full h-full bg-[#8c8fff] text-white hidden items-center justify-center font-manrope font-extrabold text-[10px] rounded-full absolute top-0 left-0">
                         {voter.name.charAt(0)}
                       </div>
                     </>
                   ) : (
-                    <div className={styles.avatarPlaceholder}>
+                    <div className="w-full h-full bg-[#8c8fff] text-white flex items-center justify-center font-manrope font-extrabold text-[10px] rounded-full absolute top-0 left-0">
                       {voter.name.charAt(0)}
                     </div>
                   )}
                 </div>
-                <div className={styles.voterName}>{voter.name}</div>
-                <div className={styles.voteIndicator}>
+                <div className="font-manrope font-extrabold text-[10px] text-[#1b1c23] tracking-[-0.2px] leading-tight flex-1 min-w-0 whitespace-nowrap overflow-hidden text-ellipsis pr-6">
+                  {voter.name}
+                </div>
+                <div className="absolute top-3 right-2.5 w-[19px] h-[19px] shrink-0 flex items-center justify-center pointer-events-none">
                   {voter.vote === "approve" ? <ApproveIcon /> : <RejectIcon />}
                 </div>
               </div>
@@ -123,12 +128,15 @@ export const DisputeCard: React.FC<DisputeCardProps> = ({ dispute }) => {
         </div>
       </div>
 
-      <div className={styles.footer}>
-        <div className={styles.prize}>
-          <StarIcon size={15} className={styles.starIcon} />
+      {/* Footer */}
+      <div className="flex justify-between items-center shrink-0 mt-5 w-full gap-3">
+        <div className="flex items-center gap-1 font-manrope font-extrabold text-sm text-[#14141a] tracking-[-0.28px] leading-[1.14]">
+          <StarIcon size={15} className="shrink-0" />
           <span>{dispute.prize}</span>
         </div>
-        <button className={styles.readButton}>Read Dispute</button>
+        <button className="bg-[#8c8fff] text-white border-none rounded-[12.5px] px-4 py-2 h-[25px] font-manrope font-extrabold text-[11px] tracking-[-0.33px] cursor-pointer transition-opacity duration-200 flex items-center justify-center whitespace-nowrap hover:opacity-90">
+          Read Dispute
+        </button>
       </div>
     </div>
   );
