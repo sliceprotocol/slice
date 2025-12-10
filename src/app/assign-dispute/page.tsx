@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAssignDispute } from "@/hooks/useAssignDispute";
 import { Search } from "lucide-react";
@@ -11,7 +11,8 @@ export default function AssignDisputePage() {
   const searchParams = useSearchParams();
   const amount = searchParams.get("amount") || "0.00005";
 
-  const { findActiveDispute, isFinding } = useAssignDispute();
+  const { findActiveDispute } = useAssignDispute();
+  const [searchFailed, setSearchFailed] = useState(false);
   const hasSearched = useRef(false); // Prevent double-fire in Strict Mode
 
   useEffect(() => {
@@ -19,12 +20,15 @@ export default function AssignDisputePage() {
     hasSearched.current = true;
 
     const runMatchmaking = async () => {
+      setSearchFailed(false);
       // 1. Run the logic to find an ID
       const disputeId = await findActiveDispute();
 
       if (disputeId) {
         // 2. Found one? Forward to the confirmation page
         router.replace(`/join-dispute/${disputeId}?amount=${amount}`);
+      } else {
+        setSearchFailed(true);
       }
     };
 
@@ -36,7 +40,27 @@ export default function AssignDisputePage() {
       <CategoryAmountHeader onBack={() => router.back()} />
 
       <div className="flex-1 flex flex-col items-center justify-center gap-6 text-center">
-        {isFinding ? (
+        {searchFailed ? (
+          /* STATE: FAILED - Only shown if search explicitly fails */
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-2">
+              <Search className="w-8 h-8 text-red-400" />
+            </div>
+            <h2 className="text-lg font-bold text-[#1b1c23]">
+              No Matches Found
+            </h2>
+            <p className="text-gray-500 max-w-[260px]">
+              We couldn't find an active dispute that needs jurors right now.
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-8 py-3 bg-[#1b1c23] text-white rounded-xl font-bold shadow-lg hover:opacity-90 transition-opacity"
+            >
+              Try Again
+            </button>
+          </div>
+        ) : (
+          /* STATE: LOADING/SEARCHING - Default view */
           <>
             <div className="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center mb-4 mx-auto animate-pulse">
               <Search className="w-10 h-10 text-blue-500" />
@@ -49,18 +73,6 @@ export default function AssignDisputePage() {
               your criteria.
             </p>
           </>
-        ) : (
-          <div className="flex flex-col items-center gap-4">
-            <p className="text-red-500 font-medium">
-              Could not find a suitable dispute.
-            </p>
-            <button
-              onClick={() => window.location.reload()}
-              className="px-6 py-2 bg-[#1b1c23] text-white rounded-xl font-bold"
-            >
-              Try Again
-            </button>
-          </div>
         )}
       </div>
     </div>
