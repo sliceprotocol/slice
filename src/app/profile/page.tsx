@@ -11,6 +11,7 @@ import {
   ChevronRight,
   RefreshCw,
   Hash,
+  Bug,
 } from "lucide-react";
 import ConnectButton from "@/components/ConnectButton";
 import { useSliceContract } from "@/hooks/useSliceContract";
@@ -158,15 +159,23 @@ export default function ProfilePage() {
                 TESTNET
               </span>
             </h3>
-            <button
-              onClick={() => void fetchLatestId()}
-              disabled={loadingLatest}
-              className="text-[#8c8fff] hover:bg-[#8c8fff]/10 p-1 rounded-full transition-colors"
-            >
-              <RefreshCw
-                className={`w-3.5 h-3.5 ${loadingLatest ? "animate-spin" : ""}`}
-              />
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={() => router.push("/debug")}
+                className="w-full py-2 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2 shadow-lg px-3"
+              >
+                <Bug className="w-4 h-4 text-[#8c8fff]" />
+              </button>
+              <button
+                onClick={() => void fetchLatestId()}
+                disabled={loadingLatest}
+                className="text-[#8c8fff] hover:bg-[#8c8fff]/10 p-1 rounded-full transition-colors"
+              >
+                <RefreshCw
+                  className={`w-3.5 h-3.5 ${loadingLatest ? "animate-spin" : ""}`}
+                />
+              </button>
+            </div>
           </div>
 
           <div className="bg-white p-5 rounded-[18px] border border-gray-100 shadow-sm flex flex-col gap-4">
