@@ -36,10 +36,15 @@ export const useSliceVoting = () => {
       // 2. Create the commitment hash: keccak256(vote + salt)
       // This is what we send to the chain. It hides the vote.
       const commitmentHash = calculateCommitment(vote, salt);
-
       console.log(`Vote: ${vote}, Salt: ${salt}, Hash: ${commitmentHash}`);
+      setLogs("Sending commitment to blockchain...");
 
-      // 3. IMPORTANT: Save the salt and vote locally!
+      // 3. Send transaction to smart contract
+      const tx = await contract.commitVote(disputeId, commitmentHash);
+      setLogs("Waiting for confirmation...");
+      await tx.wait();
+
+      // 4. IMPORTANT: Save the salt and vote locally!
       // If the user loses this salt, they cannot reveal and will lose their stake.
       const storageData = {
         vote,
@@ -51,14 +56,6 @@ export const useSliceVoting = () => {
         getStorageKey(disputeId),
         JSON.stringify(storageData),
       );
-
-      setLogs("Sending commitment to blockchain...");
-
-      // 4. Send transaction to smart contract
-      const tx = await contract.commitVote(disputeId, commitmentHash);
-
-      setLogs("Waiting for confirmation...");
-      await tx.wait();
 
       toast.success(
         "Vote committed successfully! Salt saved to browser storage.",

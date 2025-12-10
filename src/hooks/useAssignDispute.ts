@@ -58,6 +58,8 @@ export function useAssignDispute() {
         } catch (e) {
           console.warn(`Skipping dispute #${i}`, e);
         }
+        // Wait for a short time before checking the next dispute
+        await new Promise((resolve) => setTimeout(resolve, 100));
       }
       // Random Selection
       const randomIndex = Math.floor(Math.random() * availableIds.length);
