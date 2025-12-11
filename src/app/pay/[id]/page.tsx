@@ -8,7 +8,7 @@ import { SwipeButton } from "@/components/category-amount/SwipeButton";
 import { usePayDispute } from "@/hooks/usePayDispute";
 import { useGetDispute } from "@/hooks/useGetDispute";
 import { useXOContracts } from "@/providers/XOContractsProvider";
-import { formatEther } from "ethers"; // Only need formatEther here
+import { formatUnits } from "ethers";
 
 export default function PayDisputePage() {
   const router = useRouter();
@@ -19,7 +19,7 @@ export default function PayDisputePage() {
   const { dispute, refetch } = useGetDispute(disputeId);
   const { address } = useXOContracts();
 
-  // State to hold the formatted ETH value
+  // State to hold the formatted USDC value
   const [stakeAmountDisplay, setStakeAmountDisplay] =
     useState<string>("Loading...");
 
@@ -31,12 +31,10 @@ export default function PayDisputePage() {
         return;
       }
 
-      // 2. Format the required stake from Wei (BigInt) to ETH (String)
-      // contract returns bigint, e.g. 100000000000000
-      // formatEther converts to "0.0001"
-      if (dispute.deadline_pay_seconds) {
-        // Just checking if object is valid
-        const formatted = formatEther(dispute.requiredStake || BigInt(0)); // Handle potential undefined safely
+      // 2. Format the required stake from units (6 decimals) to USDC (String)
+      if (dispute.requiredStake) {
+        // USDC has 6 decimals.
+        const formatted = formatUnits(dispute.requiredStake, 6);
         setStakeAmountDisplay(formatted);
       }
     }
@@ -48,10 +46,6 @@ export default function PayDisputePage() {
 
   const handleSwipeComplete = async () => {
     if (!dispute) return;
-
-    // 3. Pass the EXACT formatted string back to the hook.
-    // The hook will run parseEther(stakeAmountDisplay) to send the transaction.
-    // This ensures we pay exactly what the contract asked for.
     const success = await payDispute(disputeId, stakeAmountDisplay);
 
     if (success) {
@@ -104,7 +98,7 @@ export default function PayDisputePage() {
             </span>
             <span className="text-lg text-[#8c8fff] font-extrabold font-manrope">
               {/* Display the value from the contract */}
-              {stakeAmountDisplay} ETH
+              {stakeAmountDisplay} USDC
             </span>
           </div>
         </div>
@@ -127,7 +121,7 @@ export default function PayDisputePage() {
           </div>
         ) : (
           <SwipeButton onSwipeComplete={() => void handleSwipeComplete()}>
-            Swipe to Fund {stakeAmountDisplay} ETH
+            Swipe to Fund {stakeAmountDisplay} USDC
           </SwipeButton>
         )}
       </div>

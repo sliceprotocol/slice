@@ -187,7 +187,7 @@ export default function CreateDisputePage() {
               type="submit"
               disabled={isCreating}
               className={`
-                w-full py-6 rounded-xl font-manrope font-extrabold text-sm tracking-tight
+                w-full py-6 rounded-xl font-manrope font-semibold  tracking-tight
                 flex items-center justify-center gap-2 transition-all
                 ${isCreating ? "bg-gray-300" : "bg-[#1b1c23] hover:bg-[#31353b] text-white"}
               `}

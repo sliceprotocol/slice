@@ -10,7 +10,7 @@ export const JoinCourtComponent = () => {
 
     if (disputeId) {
       // 2. Join
-      const result = await joinDispute(disputeId, "0.00005");
+      const result = await joinDispute(disputeId);
       if (result) {
         console.log("Assigned to Dispute ID:", disputeId);
       }

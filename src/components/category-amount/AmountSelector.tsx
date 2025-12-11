@@ -33,7 +33,7 @@ export const AmountSelector: React.FC<AmountSelectorProps> = ({
           transform: "translateX(-50%)",
         }}
       >
-        <span>{selectedAmount} USD</span>
+        <span>{selectedAmount} USDC</span>
       </div>
 
       <div className={styles.sliderContainer}>

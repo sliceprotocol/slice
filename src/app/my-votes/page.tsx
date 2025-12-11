@@ -12,6 +12,7 @@ import {
   ArrowLeft,
   Wallet,
 } from "lucide-react";
+import { fetchJSONFromIPFS } from "@/util/ipfs";
 import { useSliceContract } from "@/hooks/useSliceContract";
 import { useXOContracts } from "@/providers/XOContractsProvider";
 
@@ -28,136 +29,122 @@ interface Task {
 
 export default function MyVotesPage() {
   const router = useRouter();
-  // 2. Destructure 'connect' to allow manual connection from this page
   const { address, connect } = useXOContracts();
   const contract = useSliceContract();
 
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const fetchUserTasks = async () => {
-      // If no address, stop loading immediately so we can show the "Not Connected" state
-      if (!address) {
-        setIsLoading(false);
-        return;
-      }
-
-      if (!contract) return;
+    const fetchJurorTasks = async () => {
+      if (!address || !contract) return;
       setIsLoading(true);
 
       try {
-        const storageKey = `slice_joined_disputes_${address}`;
-        const joinedIds: number[] = JSON.parse(
-          localStorage.getItem(storageKey) || "[]",
-        );
+        // 1. Fetch IDs from Chain (Source of Truth)
+        const disputeIds = await contract.getJurorDisputes(address);
 
-        if (joinedIds.length === 0) {
-          setTasks([]);
-          setIsLoading(false);
-          return;
-        }
+        // 2. Fetch details for all IDs in parallel
+        const loadedTasks = await Promise.all(
+          disputeIds.map(async (idBigInt: bigint) => {
+            const id = idBigInt.toString();
 
-        const loadedTasks: Task[] = [];
+            // A. Fetch On-Chain Data
+            const d = await contract.disputes(id);
+            const status = Number(d.status); // 0=Created, 1=Commit, 2=Reveal, 3=Finished
 
-        for (const id of joinedIds) {
-          try {
-            const dispute = await contract.disputes(id);
-            const status = Number(dispute.status);
+            // B. Fetch Off-Chain Metadata (IPFS) for Title
+            let title = `Dispute #${id}`;
+            if (d.ipfsHash) {
+              const meta = await fetchJSONFromIPFS(d.ipfsHash);
+              if (meta?.title) title = meta.title;
+            }
 
-            if (status === 0 || status === 3) continue;
-
+            // C. Determine User Status
             const hasRevealed = await contract.hasRevealed(id, address);
-            const localVoteKey = `slice_vote_${id}_${address}`;
-            const hasCommittedLocally = !!localStorage.getItem(localVoteKey);
+            // Check local storage only for the "Secret" needed to reveal
+            const localSecret = localStorage.getItem(
+              `slice_vote_${id}_${address}`,
+            );
 
+            // D. Calculate Phase
             let phase: Task["phase"] = "WAITING";
-            let deadlineSeconds = 0;
+            let deadline = 0;
 
             if (status === 1) {
-              deadlineSeconds = Number(dispute.commitDeadline);
-              if (hasCommittedLocally) {
-                phase = "WAITING";
-              } else {
-                phase = "VOTE";
-              }
+              // Commit Phase
+              deadline = Number(d.commitDeadline);
+              phase = localSecret ? "WAITING" : "VOTE"; // If secret exists, they voted
             } else if (status === 2) {
-              deadlineSeconds = Number(dispute.revealDeadline);
-              if (hasRevealed) {
-                phase = "DONE";
-              } else {
-                phase = "REVEAL";
-              }
+              // Reveal Phase
+              deadline = Number(d.revealDeadline);
+              phase = hasRevealed ? "DONE" : "REVEAL";
+            } else if (status === 3) {
+              phase = "DONE";
             }
 
-            const nowSeconds = Math.floor(Date.now() / 1000);
-            const diff = deadlineSeconds - nowSeconds;
-            let deadlineLabel = "Ended";
+            // E. Formatting
+            const now = Math.floor(Date.now() / 1000);
+            const diff = deadline - now;
+            const deadlineLabel =
+              diff > 0 ? `${Math.ceil(diff / 3600)}h remaining` : "Ended";
 
-            if (diff > 0) {
-              const hours = Math.floor(diff / 3600);
-              const days = Math.floor(hours / 24);
-              if (days > 0) deadlineLabel = `${days} days remaining`;
-              else if (hours > 0) deadlineLabel = `${hours}h remaining`;
-              else deadlineLabel = "< 1h remaining";
-            }
-
-            let styles = {
-              color: "text-gray-500",
-              bg: "bg-gray-100",
-              icon: <Clock className="w-5 h-5 text-gray-500" />,
+            // Styling Helpers
+            const getStyles = (p: string) => {
+              if (p === "VOTE")
+                return {
+                  color: "text-blue-600",
+                  bg: "bg-blue-50",
+                  icon: <Gavel className="w-5 h-5" />,
+                };
+              if (p === "REVEAL")
+                return {
+                  color: "text-purple-600",
+                  bg: "bg-purple-50",
+                  icon: <Eye className="w-5 h-5" />,
+                };
+              if (p === "DONE")
+                return {
+                  color: "text-green-600",
+                  bg: "bg-green-50",
+                  icon: <CheckCircle2 className="w-5 h-5" />,
+                };
+              return {
+                color: "text-gray-500",
+                bg: "bg-gray-100",
+                icon: <Clock className="w-5 h-5" />,
+              };
             };
 
-            if (phase === "VOTE") {
-              styles = {
-                color: "text-blue-600",
-                bg: "bg-blue-50",
-                icon: <Gavel className="w-5 h-5 text-blue-600" />,
-              };
-            } else if (phase === "REVEAL") {
-              styles = {
-                color: "text-purple-600",
-                bg: "bg-purple-50",
-                icon: <Eye className="w-5 h-5 text-purple-600" />,
-              };
-            } else if (phase === "DONE") {
-              styles = {
-                color: "text-green-600",
-                bg: "bg-green-50",
-                icon: <CheckCircle2 className="w-5 h-5 text-green-600" />,
-              };
-            }
+            const style = getStyles(phase);
 
-            loadedTasks.push({
-              id: id.toString(),
-              title: `Dispute #${id}`,
-              category: dispute.category || "General",
+            return {
+              id,
+              title,
+              category: d.category,
               phase,
               deadlineLabel,
-              statusColor: styles.color,
-              bgColor: styles.bg,
-              icon: styles.icon,
-            });
-          } catch (err) {
-            console.error(`Failed to load dispute ${id}`, err);
-          }
-        }
+              statusColor: style.color,
+              bgColor: style.bg,
+              icon: style.icon,
+            };
+          }),
+        );
 
-        loadedTasks.sort((a, b) => {
-          const scoreA = a.phase === "VOTE" || a.phase === "REVEAL" ? 1 : 0;
-          const scoreB = b.phase === "VOTE" || b.phase === "REVEAL" ? 1 : 0;
-          return scoreB - scoreA;
-        });
-
-        setTasks(loadedTasks);
-      } catch (error) {
-        console.error("Error fetching tasks", error);
+        // Sort: Actionable items first
+        setTasks(
+          loadedTasks.sort((a) =>
+            a.phase === "VOTE" || a.phase === "REVEAL" ? -1 : 1,
+          ),
+        );
+      } catch (e) {
+        console.error("Error fetching juror tasks:", e);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchUserTasks();
+    fetchJurorTasks();
   }, [address, contract]);
 
   const handleAction = (task: Task) => {

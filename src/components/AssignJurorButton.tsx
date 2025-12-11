@@ -10,7 +10,7 @@ export const AssignJurorButton = () => {
 
     if (disputeId) {
       // 2. Join it with a default stake (Testnet amount)
-      await joinDispute(disputeId, "0.00005");
+      await joinDispute(disputeId);
     }
   };
 

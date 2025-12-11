@@ -1,16 +1,19 @@
 import { useState } from "react";
+import { Contract, parseUnits } from "ethers";
 import { useSliceContract } from "./useSliceContract";
 import { useXOContracts } from "@/providers/XOContractsProvider";
-import { parseEther } from "ethers";
 import { toast } from "sonner";
+import { USDC_ADDRESS } from "@/config"; // Import your USDC address
+import { sliceAddress } from "@/contracts/slice-abi"; // Import Slice address
+import { erc20Abi } from "@/contracts/erc20-abi";
 
 export function usePayDispute() {
-  const { address } = useXOContracts();
+  const { address, signer } = useXOContracts();
   const [isPaying, setIsPaying] = useState(false);
   const contract = useSliceContract();
 
   const payDispute = async (disputeId: string | number, amountStr: string) => {
-    if (!contract || !address) {
+    if (!contract || !address || !signer) {
       toast.error("Please connect your wallet");
       return false;
     }
@@ -18,20 +21,27 @@ export function usePayDispute() {
     setIsPaying(true);
 
     try {
-      // 1. Convert amount string (e.g. "0.0001") to Wei (BigInt)
-      // Ensure we match the contract's requiredStake
-      const valueToSend = parseEther(amountStr);
+      // 1. Prepare USDC Contract
+      const usdcContract = new Contract(USDC_ADDRESS, erc20Abi, signer);
 
-      console.log(`Paying dispute #${disputeId} with ${amountStr} ETH...`);
+      // 2. Parse Amount (USDC usually has 6 decimals, check your token!)
+      // If using standard USDC:
+      const amountToApprove = parseUnits(amountStr, 6);
 
-      // 2. Send Payable Transaction
-      const tx = await contract.payDispute(disputeId, {
-        value: valueToSend,
-      });
+      console.log(`Approving ${amountStr} USDC...`);
+      toast.info("Step 1/2: Approving USDC...");
 
-      toast.info("Payment sent. Waiting for confirmation...");
+      // 3. Approve Slice Contract to spend User's USDC
+      const approveTx = await usdcContract.approve(sliceAddress, amountToApprove);
+      await approveTx.wait();
 
-      // 3. Wait for confirmation
+      toast.success("Approval successful! Proceeding to payment...");
+      console.log("Approval confirmed:", approveTx.hash);
+
+      // 4. Call payDispute (No value needed now)
+      toast.info("Step 2/2: Confirming Payment...");
+
+      const tx = await contract.payDispute(disputeId);
       const receipt = await tx.wait();
 
       if (receipt.status === 1) {
@@ -42,17 +52,8 @@ export function usePayDispute() {
       }
     } catch (err: any) {
       console.error("Pay Dispute Error:", err);
-
       const msg = err.reason || err.message || "Unknown error";
-
-      if (msg.includes("Incorrect ETH")) {
-        toast.error("Incorrect amount sent. Please check the required stake.");
-      } else if (msg.includes("Deadline passed")) {
-        toast.error("Payment deadline has passed.");
-      } else {
-        toast.error(`Payment failed: ${msg}`);
-      }
-
+      toast.error(`Payment failed: ${msg}`);
       return false;
     } finally {
       setIsPaying(false);

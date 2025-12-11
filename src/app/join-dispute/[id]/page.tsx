@@ -1,30 +1,39 @@
 "use client";
 
 import React from "react";
-import { useRouter, useParams, useSearchParams } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { useAssignDispute } from "@/hooks/useAssignDispute";
 import { useGetDispute } from "@/hooks/useGetDispute";
 import { Loader2, Gavel, ShieldCheck, ArrowRight } from "lucide-react";
 import { CategoryAmountHeader } from "@/components/category-amount/CategoryAmountHeader";
+import { formatUnits } from "ethers"; // Import this
 
 export default function JoinDisputePage() {
   const router = useRouter();
   const params = useParams();
-  const searchParams = useSearchParams();
+  // const searchParams = useSearchParams();
 
   const disputeId = Number(params?.id);
-  const amount = searchParams.get("amount") || "0.00005";
+  // const amount = searchParams.get("amount") || "0.00005";
 
   // 1. Fetch details for this specific dispute to show preview
   const { dispute, isLoading: isLoadingDispute } = useGetDispute(
     disputeId.toString(),
   );
 
+  // Helper to format the stake for display
+  // The hook 'useGetDispute' returns the struct from the contract
+  const stakeDisplay = React.useMemo(() => {
+    if (!dispute?.requiredStake) return "Loading...";
+    // Format 6 decimals for USDC
+    return `${formatUnits(dispute.requiredStake, 6)} USDC`;
+  }, [dispute]);
+
   // 2. Hook to execute the join
   const { joinDispute, isLoading: isJoining } = useAssignDispute();
 
   const handleConfirm = async () => {
-    const success = await joinDispute(disputeId, amount);
+    const success = await joinDispute(disputeId);
     if (success) {
       router.push(`/loading-disputes/${disputeId}`);
     }
@@ -81,7 +90,8 @@ export default function JoinDisputePage() {
                 Stake Required
               </span>
               <span className="text-lg font-extrabold text-[#1b1c23]">
-                {amount} ETH
+                {/* Use the computed display variable */}
+                {stakeDisplay}
               </span>
             </div>
           </div>

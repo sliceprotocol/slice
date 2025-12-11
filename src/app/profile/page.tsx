@@ -15,11 +15,40 @@ import {
 } from "lucide-react";
 import ConnectButton from "@/components/ConnectButton";
 import { useSliceContract } from "@/hooks/useSliceContract";
+import { useXOContracts } from "@/providers/XOContractsProvider";
 import { useQuery } from "@tanstack/react-query";
 
 export default function ProfilePage() {
   const router = useRouter();
   const contract = useSliceContract();
+  const { address } = useXOContracts();
+  const [myCases, setMyCases] = useState<any[]>([]);
+
+  // NEW: Fetch User's Cases
+  React.useEffect(() => {
+    const fetchMyCases = async () => {
+      if (!contract || !address) return;
+      try {
+        const ids = await contract.getUserDisputes(address);
+
+        const casesData = await Promise.all(ids.map(async (idBg: bigint) => {
+          const id = idBg.toString();
+          const d = await contract.disputes(id);
+          // Optional: Fetch IPFS title
+          return {
+            id,
+            role: d.claimer.toLowerCase() === address.toLowerCase() ? "Claimer" : "Defender",
+            status: ["Created", "Commit", "Reveal", "Finished"][Number(d.status)],
+            category: d.category
+          };
+        }));
+        setMyCases(casesData.reverse()); // Show newest first
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    fetchMyCases();
+  }, [contract, address]);
 
   const [targetDisputeId, setTargetDisputeId] = useState("");
 
@@ -117,6 +146,31 @@ export default function ProfilePage() {
               </span>
             </div>
           </div>
+        </div>
+
+        {/* NEW SECTION: My Cases */}
+        <div className="flex flex-col gap-3 mt-4">
+          <h3 className="font-manrope font-bold text-sm text-gray-400 uppercase tracking-wider ml-1">
+            My Cases
+          </h3>
+
+          {myCases.length === 0 ? (
+            <div className="p-4 text-center text-gray-400 text-sm bg-white rounded-2xl border border-gray-100">
+              No active cases found.
+            </div>
+          ) : (
+            myCases.map((c) => (
+              <div key={c.id} className="bg-white p-4 rounded-2xl border border-gray-100 flex justify-between items-center">
+                 <div>
+                   <div className="font-bold text-[#1b1c23]">Dispute #{c.id}</div>
+                   <div className="text-xs text-gray-500">{c.role} • {c.category}</div>
+                 </div>
+                 <span className="px-3 py-1 bg-gray-100 rounded-lg text-xs font-bold text-gray-600">
+                   {c.status}
+                 </span>
+              </div>
+            ))
+          )}
         </div>
 
         {/* --- Main Actions --- */}

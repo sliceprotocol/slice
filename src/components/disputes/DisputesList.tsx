@@ -7,6 +7,8 @@ import { BarChartIcon } from "./icons/Icon";
 import { FilterIcon } from "./icons/BadgeIcons";
 import { Gavel, Eye } from "lucide-react";
 import { useXOContracts } from "@/providers/XOContractsProvider";
+import { useSliceContract } from "@/hooks/useSliceContract";
+import { fetchJSONFromIPFS } from "@/util/ipfs";
 
 export interface Dispute {
   id: string;
@@ -24,97 +26,63 @@ export interface Dispute {
   }>;
 }
 
-// Mock data - in production would come from the contract
-const mockDisputes: Dispute[] = [
-  {
-    id: "1",
-    title: "Stellar Community Fund",
-    category: "Crowfunding",
-    votesCount: 8,
-    totalVotes: 10,
-    prize: "$5,000",
-    userVote: "reject",
-    voters: [
-      {
-        name: "Julio Banegas",
-        avatar: "/images/profiles-mockup/profile-1.png",
-        vote: "reject",
-      },
-      {
-        name: "Micaela Descotte",
-        avatar: "/images/profiles-mockup/profile-2.png",
-        vote: "approve",
-      },
-    ],
-  },
-  {
-    id: "2",
-    title: "Ethereum Fundation",
-    category: "Crowfunding",
-    votesCount: 8,
-    totalVotes: 10,
-    prize: "$5,000",
-    userVote: "reject",
-    voters: [
-      {
-        name: "Julio Banegas",
-        avatar: "/images/profiles-mockup/profile-1.png",
-        vote: "reject",
-      },
-      {
-        name: "Micaela Descotte",
-        avatar: "/images/profiles-mockup/profile-2.png",
-        vote: "approve",
-      },
-    ],
-  },
-  {
-    id: "3",
-    title: "Lionstar",
-    category: "Crowfunding",
-    votesCount: 8,
-    totalVotes: 10,
-    prize: "$5,000",
-    userVote: "reject",
-    voters: [
-      {
-        name: "Julio Banegas",
-        avatar: "/images/profiles-mockup/profile-1.png",
-        vote: "reject",
-      },
-      {
-        name: "Micaela Descotte",
-        avatar: "/images/profiles-mockup/profile-2.png",
-        vote: "approve",
-      },
-    ],
-  },
-];
-
 export const DisputesList: React.FC = () => {
   const router = useRouter();
   const { address } = useXOContracts();
-
-  // "activeDisputeId" = The ID this user should probably act on (Vote/Reveal)
+  const contract = useSliceContract();
+  const [myDisputes, setMyDisputes] = useState<Dispute[]>([]);
   const [activeDisputeId, setActiveDisputeId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (address) {
-      // 1. READ LOCAL STORAGE: Get all disputes THIS user has joined
-      const storageKey = `slice_joined_disputes_${address}`;
-      const joinedDisputes: number[] = JSON.parse(
-        localStorage.getItem(storageKey) || "[]",
-      );
+    const loadMyDisputes = async () => {
+      if (!contract || !address) return;
 
-      if (joinedDisputes.length > 0) {
-        // 2. FIND MOST RELEVANT: For now, we take the highest ID (latest one joined)
-        const myLatestId = Math.max(...joinedDisputes);
-        setActiveDisputeId(myLatestId.toString());
-      } else {
-        setActiveDisputeId(null);
+      try {
+        // 1. Get IDs where I am involved (Juror)
+        const jurorIds = await contract.getJurorDisputes(address);
+
+        const loaded = await Promise.all(
+          jurorIds.map(async (idBg: bigint) => {
+            const id = idBg.toString();
+            const d = await contract.disputes(id);
+
+            // Fetch IPFS for Title/Icon
+            let title = `Dispute #${id}`;
+            if (d.ipfsHash) {
+              const meta = await fetchJSONFromIPFS(d.ipfsHash);
+              if (meta) {
+                title = meta.title || title;
+              }
+            }
+
+            // Calculate basic stats (mocked for list view as needed)
+            return {
+              id,
+              title,
+              category: d.category,
+              votesCount: 0,
+              totalVotes: Number(d.jurorsRequired),
+              prize: "Rewards Pending", // Could calc from d.jurorStake
+              voters: [],
+            };
+          }),
+        );
+
+        // Sort by ID descending
+        const sorted = loaded.reverse();
+        setMyDisputes(sorted);
+
+        // Set active dispute to the most recent one if any
+        if (sorted.length > 0) {
+          setActiveDisputeId(sorted[0].id);
+        }
+      } catch (e) {
+        console.error("Error loading disputes", e);
       }
-    }
-  }, [address]);
+    };
+
+    loadMyDisputes();
+  }, [contract, address]);
 
   const handleJusticeClick = () => {
     router.push("/category-amount");
@@ -188,15 +156,18 @@ export const DisputesList: React.FC = () => {
 
       {/* Disputes List */}
       <div className="flex flex-col gap-[25px] mb-10">
-        {mockDisputes.map((dispute) => (
-          <DisputeCard key={dispute.id} dispute={dispute} />
-        ))}
+        {myDisputes.length === 0 ? (
+          <div className="text-gray-400 text-sm text-center py-10 bg-gray-50 rounded-2xl border border-gray-100">
+            No disputes found. Join one to get started!
+          </div>
+        ) : (
+          myDisputes.map((dispute) => (
+            <DisputeCard key={dispute.id} dispute={dispute} />
+          ))
+        )}
       </div>
 
-      {/* Floating Action Button - Corrected Styling */}
-      {/* Updated: Uses explicit '#1b1c23' color to match design system exactly.
-          Added: hover:text-white to ensure contrast on hover state.
-      */}
+      {/* Floating Action Button */}
       <button
         onClick={handleJusticeClick}
         className="

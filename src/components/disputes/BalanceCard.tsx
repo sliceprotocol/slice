@@ -5,13 +5,16 @@ import { useBalance } from "wagmi";
 import { DepositIcon, SendIcon } from "./icons/ActionIcons";
 import styles from "./BalanceCard.module.css";
 import { useXOContracts } from "@/providers/XOContractsProvider";
+// 1. Import the USDC Address
+import { USDC_ADDRESS } from "@/config";
 
 export const BalanceCard: React.FC = () => {
   const { address } = useXOContracts();
 
-  // Fetch native balance (ETH/MATIC etc depending on chain)
+  // 2. Pass the 'token' prop to fetch ERC20 instead of Native ETH
   const { data, isError, isLoading } = useBalance({
     address: address as `0x${string}` | undefined,
+    token: USDC_ADDRESS as `0x${string}`,
   });
 
   const displayBalance = React.useMemo(() => {
@@ -19,8 +22,10 @@ export const BalanceCard: React.FC = () => {
     if (isLoading) return "Loading...";
     if (isError || !data) return "Error";
 
-    const balance = parseFloat(data.formatted).toFixed(4);
-    return `${balance} ${data.symbol}`;
+    // 3. USDC has 6 decimals, show 2 for UI
+    const balance = parseFloat(data.formatted).toFixed(2);
+    // 4. Force the symbol to USDC just to be safe/consistent
+    return `${balance} USDC`;
   }, [address, isLoading, isError, data]);
 
   return (
