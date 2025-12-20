@@ -130,7 +130,6 @@ export function useSendFunds(onSuccess?: () => void) {
         // FORCE LEGACY TYPE (Optional Debugging Step)
         delete populatedTx.maxFeePerGas;
         delete populatedTx.maxPriorityFeePerGas;
-
         // Ensure we explicitly set a gasPrice (fallback to feeData or a default)
         // If feeData.gasPrice is null, we can try to get it again or rely on the provider
         const legacyFeeData = await signer.provider?.getFeeData();
