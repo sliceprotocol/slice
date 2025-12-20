@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useXOContracts } from "@/providers/XOContractsProvider";
 import { useEmbedded } from "@/providers/EmbeddedProvider";
 import { toast } from "sonner";
@@ -16,7 +16,7 @@ import {
 const ConnectButton = () => {
   const { isEmbedded } = useEmbedded();
   const { connect, disconnect, address } = useXOContracts();
-  const { login, logout, user } = usePrivy();
+  const { login, logout } = usePrivy();
 
   const [copied, setCopied] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
