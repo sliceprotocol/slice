@@ -1,63 +1,48 @@
 "use client";
 
-import { wagmiAdapter, projectId, networks } from "@/config";
+import React, { ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { createAppKit } from "@reown/appkit/react";
-import { baseSepolia } from "@reown/appkit/networks";
-import React, { type ReactNode } from "react";
-import { cookieToInitialState, WagmiProvider, type Config } from "wagmi";
-import { Toaster } from "@/components/ui/sonner";
+import { PrivyProvider } from "@privy-io/react-auth";
+import { WagmiProvider } from "@privy-io/wagmi";
+import { cookieToInitialState } from "wagmi";
+import { PRIVY_APP_ID, PRIVY_CLIENT_ID } from "@/config/app";
+import { config } from "@/config";
 
-// Set up queryClient
 const queryClient = new QueryClient();
 
-// Set up metadata
-const metadata = {
-  name: "next-reown-appkit",
-  description: "next-reown-appkit",
-  url: "https://github.com/0xonerb/next-reown-appkit-ssr", // origin must match your domain & subdomain
-  icons: ["https://avatars.githubusercontent.com/u/179229932"],
-};
-
-// Create the modal
-export const modal = createAppKit({
-  adapters: [wagmiAdapter],
-  projectId,
-  networks,
-  defaultNetwork: baseSepolia,
-  metadata,
-  themeMode: "light",
-  features: {
-    analytics: true, // Optional - defaults to your Cloud configuration
-  },
-  themeVariables: {
-    "--w3m-accent": "#000000",
-  },
-});
-
-function ContextProvider({
+export default function ContextProvider({
   children,
   cookies,
 }: {
   children: ReactNode;
-  cookies: string | null;
+  cookies?: string | null;
 }) {
-  const initialState = cookieToInitialState(
-    wagmiAdapter.wagmiConfig as Config,
-    cookies,
-  );
+  // Optional: Rehydrate Wagmi state from cookies if you use SSR
+  const initialState = cookieToInitialState(config, cookies);
 
   return (
-    <WagmiProvider
-      config={wagmiAdapter.wagmiConfig as Config}
-      initialState={initialState}
+    <PrivyProvider
+      appId={PRIVY_APP_ID}
+      clientId={PRIVY_CLIENT_ID}
+      config={{
+        appearance: {
+          theme: "light",
+          accentColor: "#1b1c23",
+          logo: "/images/slice-logo-light.svg",
+        },
+        embeddedWallets: {
+          ethereum: {
+            createOnLogin: "users-without-wallets",
+          },
+        },
+        loginMethods: ["email", "wallet"],
+      }}
     >
       <QueryClientProvider client={queryClient}>
-        {children}
-        <Toaster />
+        <WagmiProvider config={config} initialState={initialState}>
+          {children}
+        </WagmiProvider>
       </QueryClientProvider>
-    </WagmiProvider>
+    </PrivyProvider>
   );
 }
-
-export default ContextProvider;

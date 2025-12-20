@@ -1,26 +1,13 @@
-import { SUPPORTED_CHAINS } from "./chains";
-import { cookieStorage, createStorage } from "wagmi";
-import { WagmiAdapter } from "@reown/appkit-adapter-wagmi";
-import type { Chain } from "viem";
+import { createConfig, http } from "wagmi";
+import { activeChains } from "./chains";
 
-const projectIdRaw = process.env.NEXT_PUBLIC_PROJECT_ID;
-if (!projectIdRaw) throw new Error("Project ID is not defined");
-export const projectId = projectIdRaw;
-
-// AUTOMATICALLY DERIVED NETWORKS
-export const networks = SUPPORTED_CHAINS.map((c) => c.chain) as [
-  Chain,
-  ...Chain[],
-];
-
-// Pass to Adapter
-export const wagmiAdapter = new WagmiAdapter({
-  storage: createStorage({
-    storage: cookieStorage,
-  }) as any,
+export const config = createConfig({
+  chains: activeChains,
+  transports: {
+    // You can even dynamically generate this if you want,
+    // or just leave as http() which defaults to public RPCs
+    [activeChains[0].id]: http(),
+    [activeChains[1]?.id]: http(),
+  },
   ssr: true,
-  projectId: projectId as string,
-  networks,
 });
-
-export const config = wagmiAdapter.wagmiConfig;
