@@ -77,7 +77,7 @@ export const XOContractsProvider = ({ children }: { children: ReactNode }) => {
         await provider.request({ method: "eth_requestAccounts" });
 
         console.log("🛠 Creating Ethers Provider...");
-        const ethersProvider = new BrowserProvider(provider);
+        const ethersProvider = new BrowserProvider(provider, "any");
 
         console.log("✍️ Getting Signer...");
         const newSigner = await ethersProvider.getSigner();

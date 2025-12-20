@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { parseUnits, isAddress, Contract, formatEther, formatUnits } from "ethers";
+import { parseUnits, isAddress, Contract } from "ethers";
 import {
   useWriteContract,
   useWaitForTransactionReceipt,
@@ -67,86 +67,108 @@ export function useSendFunds(onSuccess?: () => void) {
       return;
     }
 
-    try {
-      const value = parseUnits(amount, 6); // USDC has 6 decimals
-      // Determine active chain ID (Default to Base Sepolia 84532 if undefined)
-      // Determine active chain ID
-      const activeChainId = isEmbedded ? DEFAULT_CHAIN.chain.id : wagmiChainId || DEFAULT_CHAIN.chain.id;
-      const { usdcToken } = getContractsForChain(activeChainId);
+    if (isEmbedded) {
+      if (!signer) {
+        console.error("❌ Debug: Signer is null");
+        return;
+      }
 
-      if (isEmbedded) {
-        // --- PATH A: Embedded (Ethers.js) ---
-        if (!signer) {
-          toast.error("Wallet not ready");
-          return;
-        }
+      try {
+        const value = parseUnits(amount, 6);
+        // Determine active chain ID
+        const activeChainId = DEFAULT_CHAIN.chain.id;
+        const { usdcToken } = getContractsForChain(activeChainId);
 
-        setIsEmbeddedLoading(true);
+        const tokenContract = new Contract(usdcToken, erc20Abi as any, signer);
+
+        console.log("--- 🕵️ DEEP DEBUG START ---");
+
+        // 1. INSPECT SIGNER & NETWORK
+        const signerAddress = await signer.getAddress();
+        const providerNetwork = await signer.provider?.getNetwork();
+        console.log(`👤 Signer Address: ${signerAddress}`);
+        console.log(`🌐 Provider Chain ID: ${providerNetwork?.chainId}`);
+
+        // 2. CONSTRUCT TRANSACTION (Without Sending)
+        console.log("🏗️ Populating Transaction...");
+        const populatedTx = await tokenContract.transfer.populateTransaction(recipient, value);
+
+        // Log the RAW payload Ethers wants to send
+        console.log("📦 RAW TX PAYLOAD:", JSON.stringify({
+          to: populatedTx.to,
+          from: populatedTx.from,
+          data: populatedTx.data,
+          chainId: populatedTx.chainId?.toString(),
+          value: populatedTx.value?.toString(),
+          type: populatedTx.type
+        }, null, 2));
+
+        // 3. CHECK FOR EIP-1559 COMPATIBILITY
+        const feeData = await signer.provider?.getFeeData();
+        console.log("⛽ Chain Fee Data:", JSON.stringify({
+          gasPrice: feeData?.gasPrice?.toString(),
+          maxFeePerGas: feeData?.maxFeePerGas?.toString(),
+          maxPriorityFeePerGas: feeData?.maxPriorityFeePerGas?.toString()
+        }, null, 2));
+
+        // 4. MANUAL ESTIMATION (Raw Call)
+        console.log("🧮 Attempting Raw Estimation...");
         try {
-          // Cast ABI to any to avoid strict typing issues between viem/ethers
-          const tokenContract = new Contract(
-            usdcToken,
-            erc20Abi as any,
-            signer,
-          );
-
-          // --- 🔍 DIAGNOSTIC LOGS START ---
-          console.log("--- 🕵️ DIAGNOSTIC START ---");
-
-          // 1. Check ETH Balance (for Gas)
-          const ethBalance = await signer.provider?.getBalance(await signer.getAddress());
-          console.log(`💰 ETH Balance: ${ethBalance ? formatEther(ethBalance) : 'Unknown'} ETH`);
-
-          // 2. Check USDC Balance
-          const usdcBalance = await tokenContract.balanceOf(await signer.getAddress());
-          console.log(`💵 USDC Balance: ${formatUnits(usdcBalance, 6)} USDC`);
-          console.log(`📉 Attempting to send: ${amount} USDC`);
-
-          if (usdcBalance < value) {
-            console.error("❌ INSUFFICIENT USDC FUNDS DETECTED");
-          }
-
-          // 3. Explicit Gas Estimation Log
-          console.log("⛽ Attempting Gas Estimation...");
-          try {
-            const estimatedGas = await tokenContract.transfer.estimateGas(recipient, value);
-            console.log(`✅ Gas Estimated: ${estimatedGas.toString()}`);
-          } catch (gasError: any) {
-            console.error("❌ GAS ESTIMATION FAILED:", gasError?.reason || gasError?.message);
-            console.warn("⚠️ This usually means the contract would revert (insufficient funds, paused contract, etc).");
-          }
-          console.log("--- 🕵️ DIAGNOSTIC END ---");
-          // --- 🔍 DIAGNOSTIC LOGS END ---
-
-          toast.info("Sending transaction...");
-          const tx = await tokenContract.transfer(recipient, value, { gasLimit: 100000 });
-
-
-          toast.info("Waiting for confirmation...");
-          await tx.wait();
-
-          toast.success("Transfer successful!");
-          onSuccess?.();
-        } catch (err: any) {
-          console.error("Embedded Send Error:", err);
-          const detailedError = err.reason || err.shortMessage || err.message || JSON.stringify(err);
-          toast.error(`Transfer Failed: ${detailedError}`);
-        } finally {
-          setIsEmbeddedLoading(false);
+          const estimate = await signer.estimateGas(populatedTx);
+          console.log(`✅ Raw Estimate Success: ${estimate.toString()}`);
+          // Add buffer
+          populatedTx.gasLimit = (estimate * BigInt(120)) / BigInt(100);
+        } catch (estErr: any) {
+          console.error("❌ Raw Estimate Failed:", estErr.message);
+          // Fallback to see if it sends anyway
+          populatedTx.gasLimit = BigInt(65000);
         }
-      } else {
-        // --- PATH B: Standard (Wagmi) ---
+
+        // 5. ATTEMPT SIGNING (The Moment of Truth)
+        console.log("🚀 Sending Transaction...");
+
+        // FORCE LEGACY TYPE (Optional Debugging Step)
+        // Uncomment this if the error persists. Some embedded wallets hate Type 2 txs.
+        // delete populatedTx.maxFeePerGas;
+        // delete populatedTx.maxPriorityFeePerGas;
+        // populatedTx.type = 0; 
+
+        const tx = await signer.sendTransaction(populatedTx);
+
+        console.log("✅ Transaction Sent! Hash:", tx.hash);
+        await tx.wait();
+        toast.success("Transfer successful!");
+        onSuccess?.();
+
+      } catch (err: any) {
+        console.error("💥 CRITICAL FAILURE:", err);
+        console.log("Error Keys:", Object.keys(err));
+        // Log inner errors which often hide the real reason
+        if (err.info) console.log("Error Info:", err.info);
+        if (err.error) console.log("Inner Error:", err.error);
+
+        toast.error(`Debug Failed: ${err.message}`);
+      } finally {
+        console.log("--- 🕵️ DEEP DEBUG END ---");
+        setIsEmbeddedLoading(false);
+      }
+    } else {
+      // --- Standard Wagmi Logic ---
+      try {
+        const value = parseUnits(amount, 6);
+        const activeChainId = wagmiChainId || DEFAULT_CHAIN.chain.id;
+        const { usdcToken } = getContractsForChain(activeChainId);
+
         writeContract({
           address: usdcToken as `0x${string}`,
           abi: erc20Abi,
           functionName: "transfer",
           args: [recipient as `0x${string}`, value],
         });
+      } catch (err) {
+        console.error("Preparation Error:", err);
+        toast.error("Failed to prepare transaction");
       }
-    } catch (err) {
-      console.error("Preparation Error:", err);
-      toast.error("Failed to prepare transaction");
-      setIsEmbeddedLoading(false);
     }
   };
 
