@@ -7,7 +7,7 @@ import { InfoCard } from "@/components/category-amount/InfoCard";
 import { SwipeButton } from "@/components/category-amount/SwipeButton";
 import { usePayDispute } from "@/hooks/usePayDispute";
 import { useGetDispute } from "@/hooks/useGetDispute";
-import { useContracts } from "@/providers/ContractsProvider";
+import { useContracts } from "@/providers/ConnectProvider";
 import { formatUnits } from "ethers";
 
 export default function PayDisputePage() {

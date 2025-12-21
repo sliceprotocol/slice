@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { Contract } from "ethers";
-import { useContracts } from "@/providers/ContractsProvider";
+import { useContracts } from "@/providers/ConnectProvider";
 import { useChainId } from "wagmi";
 import { getContractsForChain } from "@/config/contracts";
 import { useEmbedded } from "@/providers/EmbeddedProvider";

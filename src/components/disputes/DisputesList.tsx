@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { DisputeCard } from "./DisputeCard";
 import { BarChartIcon } from "./icons/Icon";
 import { FilterIcon } from "./icons/BadgeIcons";
-import { useContracts } from "@/providers/ContractsProvider";
+import { useContracts } from "@/providers/ConnectProvider";
 import { useSliceContract } from "@/hooks/useSliceContract";
 import { fetchJSONFromIPFS } from "@/util/ipfs";
 

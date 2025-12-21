@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useBalance } from "wagmi";
 import { Contract, formatUnits } from "ethers";
 import { useEmbedded } from "@/providers/EmbeddedProvider";
-import { useContracts } from "@/providers/ContractsProvider";
+import { useContracts } from "@/providers/ConnectProvider";
 import { erc20Abi } from "@/contracts/erc20-abi";
 import { toast } from "sonner";
 

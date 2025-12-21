@@ -8,7 +8,7 @@ import { formatUnits } from "ethers";
 
 // Hooks
 import { useSliceContract } from "@/hooks/useSliceContract";
-import { useContracts } from "@/providers/ContractsProvider";
+import { useContracts } from "@/providers/ConnectProvider";
 import { useSliceVoting } from "@/hooks/useSliceVoting";
 import { useCreateDispute } from "@/hooks/useCreateDispute";
 import { usePayDispute } from "@/hooks/usePayDispute";

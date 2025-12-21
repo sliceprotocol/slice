@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { Contract } from "ethers";
 import { useSliceContract } from "./useSliceContract";
-import { useContracts } from "@/providers/ContractsProvider";
+import { useContracts } from "@/providers/ConnectProvider";
 import { toast } from "sonner";
 import { getContractsForChain } from "@/config/contracts";
 import { useEmbedded } from "@/providers/EmbeddedProvider";

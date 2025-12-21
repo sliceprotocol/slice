@@ -3,7 +3,7 @@ import { Contract } from "ethers";
 import { useChainId } from "wagmi";
 import { toast } from "sonner";
 import { useSliceContract } from "./useSliceContract";
-import { useContracts } from "@/providers/ContractsProvider";
+import { useContracts } from "@/providers/ConnectProvider";
 import { getContractsForChain } from "@/config/contracts";
 import { erc20Abi } from "@/contracts/erc20-abi";
 import { useEmbedded } from "@/providers/EmbeddedProvider";

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useContracts } from "@/providers/ContractsProvider";
+import { useContracts } from "@/providers/ConnectProvider";
 import { DEFAULT_CHAIN } from "@/config/chains"; // Import settings to get the Chain ID
 import { toast } from "sonner";
 import { X, Copy, Check } from "lucide-react";

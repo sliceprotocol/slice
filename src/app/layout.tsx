@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import "./globals.css";
 import ContextProvider from "@/contexts";
-import { ContractsProvider } from "@/providers/ContractsProvider";
+import { ConnectProvider } from "@/providers/ConnectProvider";
 import { EmbeddedProvider } from "@/providers/EmbeddedProvider";
 import { Geist, Geist_Mono } from "next/font/google";
 import { TimerProvider } from "@/contexts/TimerContext";
@@ -45,7 +45,7 @@ export default async function RootLayout({
       >
         <EmbeddedProvider>
           <ContextProvider cookies={cookies}>
-            <ContractsProvider>
+            <ConnectProvider>
               <TimerProvider>
                 {/* Updated Structure:
                   1. relative: allows absolute positioning inside if needed
@@ -68,7 +68,7 @@ export default async function RootLayout({
                   <NetworkDebugger />
                 </div>
               </TimerProvider>
-            </ContractsProvider>
+            </ConnectProvider>
           </ContextProvider>
         </EmbeddedProvider>
       </body>

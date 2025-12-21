@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { fetchJSONFromIPFS } from "@/util/ipfs";
 import { useSliceContract } from "@/hooks/useSliceContract";
-import { useContracts } from "@/providers/ContractsProvider";
+import { useContracts } from "@/providers/ConnectProvider";
 import { hasLocalVote } from "@/util/votingStorage";
 
 interface Task {

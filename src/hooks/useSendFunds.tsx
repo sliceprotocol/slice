@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { getContractsForChain } from "@/config/contracts";
 import { DEFAULT_CHAIN } from "@/config/chains";
 import { useEmbedded } from "@/providers/EmbeddedProvider";
-import { useContracts } from "@/providers/ContractsProvider";
+import { useContracts } from "@/providers/ConnectProvider";
 
 export function useSendFunds(onSuccess?: () => void) {
   // --- 1. Contexts & State ---

@@ -10,7 +10,7 @@ import { DisputeOverviewHeader } from "@/components/dispute-overview/DisputeOver
 import { TimerCard } from "@/components/dispute-overview/TimerCard";
 import { PaginationDots } from "@/components/dispute-overview/PaginationDots";
 import { SuccessAnimation } from "@/components/SuccessAnimation";
-import { useContracts } from "@/providers/ContractsProvider";
+import { useContracts } from "@/providers/ConnectProvider";
 import { ArrowRight, RefreshCw, Eye } from "lucide-react";
 import { useSwipeGesture } from "@/hooks/useSwipeGesture";
 import { toast } from "sonner";

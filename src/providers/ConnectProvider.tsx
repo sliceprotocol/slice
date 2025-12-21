@@ -26,7 +26,7 @@ interface ContractsContextType {
 
 const ContractsContext = createContext<ContractsContextType | null>(null);
 
-export const ContractsProvider = ({ children }: { children: ReactNode }) => {
+export const ConnectProvider = ({ children }: { children: ReactNode }) => {
   const { isEmbedded } = useEmbedded();
 
   // --- STRATEGY 1: Embedded Wallet (via Hook) ---

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useContracts } from "@/providers/ContractsProvider";
+import { useContracts } from "@/providers/ConnectProvider";
 import { useEmbedded } from "@/providers/EmbeddedProvider";
 import { toast } from "sonner";
 import { Loader2, Copy, Check, Wallet, LogOut, User } from "lucide-react";

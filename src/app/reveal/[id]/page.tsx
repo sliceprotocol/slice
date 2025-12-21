@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSliceVoting } from "@/hooks/useSliceVoting";
-import { useContracts } from "@/providers/ContractsProvider";
+import { useContracts } from "@/providers/ConnectProvider";
 import { useGetDispute } from "@/hooks/useGetDispute";
 import { useSwipeGesture } from "@/hooks/useSwipeGesture";
 import { DisputeOverviewHeader } from "@/components/dispute-overview/DisputeOverviewHeader";

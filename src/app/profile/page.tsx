@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Terminal, Bug, Coins, Wallet } from "lucide-react";
 import ConnectButton from "@/components/ConnectButton";
 import { useSliceContract } from "@/hooks/useSliceContract";
-import { useContracts } from "@/providers/ContractsProvider";
+import { useContracts } from "@/providers/ConnectProvider";
 
 export default function ProfilePage() {
   const router = useRouter();

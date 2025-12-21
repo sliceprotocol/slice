@@ -2,7 +2,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useSliceContract } from "./useSliceContract";
 import { calculateCommitment, generateSalt } from "../util/votingUtils";
-import { useContracts } from "@/providers/ContractsProvider";
+import { useContracts } from "@/providers/ConnectProvider";
 // 1. Import the utility
 import { saveVoteData, getVoteData } from "../util/votingStorage";
 

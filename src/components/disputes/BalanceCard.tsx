@@ -7,7 +7,7 @@ import { RefreshCw, AlertCircle } from "lucide-react";
 
 import { DepositIcon, SendIcon, ReceiveIcon } from "./icons/ActionIcons";
 import styles from "./BalanceCard.module.css";
-import { useContracts } from "@/providers/ContractsProvider";
+import { useContracts } from "@/providers/ConnectProvider";
 import { useTokenBalance } from "@/hooks/useTokenBalance";
 import { SendModal } from "./SendModal";
 import { ReceiveModal } from "./ReceiveModal";

@@ -1,6 +1,6 @@
 "use client";
 import { useAccount } from "wagmi";
-import { useContracts } from "@/providers/ContractsProvider";
+import { useContracts } from "@/providers/ConnectProvider";
 import { defaultChain } from "@/config/chains";
 
 export const NetworkDebugger = () => {

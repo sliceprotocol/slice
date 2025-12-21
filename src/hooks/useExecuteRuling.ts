@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useSliceContract } from "./useSliceContract";
-import { useContracts } from "@/providers/ContractsProvider";
+import { useContracts } from "@/providers/ConnectProvider";
 import { toast } from "sonner";
 
 export function useExecuteRuling() {
