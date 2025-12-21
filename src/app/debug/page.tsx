@@ -73,7 +73,10 @@ export default function DebugPage() {
       let hasRevealed = false;
       try {
         hasRevealed = await contract.hasRevealed(targetId, address);
-      } catch (e) { console.warn("hasRevealed check failed", e); }
+      } catch (e) {
+        console.error("hasRevealed check failed", e);
+        toast.warning?.("Unable to load on-chain reveal status. Displaying status as not revealed.");
+      }
 
       setRawDisputeData({
         id: d.id.toString(),

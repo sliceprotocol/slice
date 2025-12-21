@@ -2,8 +2,12 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { Plus, RefreshCw, User, Activity } from "lucide-react";
 
+interface ContractInfo {
+    count: string;
+}
+
 interface GlobalStateCardProps {
-    contractInfo: any;
+    contractInfo: ContractInfo;
     isCreating: boolean;
     onCreate: () => void;
     myPartyDisputes: string[];
