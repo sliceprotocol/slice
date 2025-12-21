@@ -64,8 +64,8 @@ export const DisputesList: React.FC = () => {
           jurorIds.map(async (idBg: bigint) => {
             const id = idBg.toString();
             const d = await contract.disputes(id);
+            const category = d.category || "General";
             let title = `Dispute #${id}`;
-            let category = d.category || "General";
 
             if (d.ipfsHash) {
               const meta = await fetchJSONFromIPFS(d.ipfsHash);
@@ -187,7 +187,7 @@ export const DisputesList: React.FC = () => {
           {isFilterOpen && (
             <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-2xl shadow-xl border border-gray-100 p-2 z-50 animate-in fade-in zoom-in-95 slide-in-from-top-2 origin-top-right">
               <div className="flex flex-col gap-1">
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-3 py-2">
+                <span className="text-[10px] font-bold text-gray-800 uppercase tracking-wider px-3 py-2">
                   By Category
                 </span>
 

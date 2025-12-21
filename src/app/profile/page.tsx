@@ -2,16 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import {
-  ArrowLeft,
-  Terminal,
-  Bug,
-  Trophy,
-  Flame,
-  Target,
-  ChevronRight,
-  Settings,
-} from "lucide-react";
+import { ArrowLeft, Terminal, Bug, Trophy, Flame, Target } from "lucide-react";
 import ConnectButton from "@/components/ConnectButton";
 import { useSliceContract } from "@/hooks/useSliceContract";
 import { useConnect } from "@/providers/ConnectProvider";
@@ -177,57 +168,33 @@ export default function ProfilePage() {
         </div>
 
         {/* --- 3. Settings & Tools --- */}
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3">
           <h3 className="font-manrope font-extrabold text-gray-800 uppercase tracking-wide ml-1">
             System &amp; Tools
           </h3>
 
-          <div className="grid grid-cols-1 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             <button
               onClick={() => router.push("/debug")}
-              className="flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-100 shadow-sm group active:scale-[0.98] transition-all"
+              className="flex items-center justify-center gap-2 p-3 bg-white rounded-xl border border-gray-100 shadow-sm text-xs font-bold text-gray-600 hover:bg-gray-50 active:scale-95 transition-all"
             >
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600">
-                  <Bug className="w-5 h-5" />
-                </div>
-                <div className="text-left">
-                  <span className="block font-bold text-gray-800">
-                    Network Debugger
-                  </span>
-                  <span className="text-[10px] font-semibold text-gray-400">
-                    Inspect contract state
-                  </span>
-                </div>
-              </div>
-              <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-[#1b1c23] transition-colors" />
+              <Bug className="w-4 h-4 text-[#8c8fff]" />
+              <span>Debugger</span>
             </button>
 
             <button
               onClick={openConsole}
-              className="flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-100 shadow-sm group active:scale-[0.98] transition-all"
+              className="flex items-center justify-center gap-2 p-3 bg-white rounded-xl border border-gray-100 shadow-sm text-xs font-bold text-gray-600 hover:bg-gray-50 active:scale-95 transition-all"
             >
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-gray-600">
-                  <Terminal className="w-5 h-5" />
-                </div>
-                <div className="text-left">
-                  <span className="block font-bold text-gray-800">
-                    System Console
-                  </span>
-                  <span className="text-[10px] font-semibold text-gray-400">
-                    View logs & errors
-                  </span>
-                </div>
-              </div>
-              <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-[#1b1c23] transition-colors" />
+              <Terminal className="w-4 h-4 text-gray-500" />
+              <span>Console</span>
             </button>
           </div>
         </div>
 
         {/* Version Info */}
         <div className="text-center mt-4">
-          <span className="text-[12px] font-bold text-gray-300">
+          <span className="text-[12px] font-bold text-gray-400">
             Slice v1.0.2{" "}
           </span>
         </div>
