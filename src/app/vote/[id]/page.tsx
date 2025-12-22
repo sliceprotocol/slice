@@ -15,6 +15,7 @@ import {
   Shield,
   Lock,
   Scale,
+  Home,
 } from "lucide-react";
 import { useSwipeGesture } from "@/hooks/useSwipeGesture";
 import { useVote } from "@/hooks/useVote";
@@ -124,21 +125,24 @@ export default function VotePage() {
 
           {/* VOTING CARDS AREA */}
           <div className="flex flex-col gap-5 relative flex-1 min-h-[320px]">
-            {/* CLAIMANT CARD */}
-            <VoteOptionCard
-              isSelected={selectedVote === 1}
-              isCommitted={hasCommittedLocally}
-              onClick={() => handleVoteSelect(1)}
-              info={claimerInfo}
-            />
+            {/* WRAPPER: Make the first card relative so we can anchor the badge to it */}
+            <div className="relative z-10">
+              {/* CLAIMANT CARD */}
+              <VoteOptionCard
+                isSelected={selectedVote === 1}
+                isCommitted={hasCommittedLocally}
+                onClick={() => handleVoteSelect(1)}
+                info={claimerInfo}
+              />
 
-            {/* VS Badge (Absolute Center) */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none">
-              <div className="bg-white p-1 rounded-full shadow-sm border border-gray-100">
-                <div className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center">
-                  <span className="text-[9px] font-black text-gray-200">
-                    VS
-                  </span>
+              {/* VS BADGE (Anchored to bottom of this card) */}
+              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2.5 -translate-y-1/2 z-20 pointer-events-none">
+                <div className="bg-white p-1 rounded-full shadow-sm border border-gray-100">
+                  <div className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center">
+                    <span className="text-[9px] font-black text-gray-200">
+                      VS
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -219,21 +223,36 @@ export default function VotePage() {
             </button>
           ) : (
             <button
-              onClick={() => router.push(`/reveal/${disputeId}`)}
-              disabled={isRevealDisabled}
+              onClick={() => {
+                if (isRevealDisabled) {
+                  router.push("/disputes");
+                } else {
+                  router.push(`/reveal/${disputeId}`);
+                }
+              }}
+              // Removed disabled prop so user can always click to go home if reveal is disabled
               className={`
                         w-full py-4 px-6 rounded-2xl font-manrope font-semibold tracking-wide transition-all duration-300
                         flex items-center justify-center gap-2
                         ${
                           isRevealDisabled
-                            ? "bg-gray-100 text-gray-400 cursor-not-allowed shadow-none"
-                            : "bg-[#1b1c23] text-white shadow-[0_8px_20px_-6px_rgba(27,28,35,0.2)] hover:scale-[1.02] active:scale-[0.98]"
+                            ? "bg-white text-[#1b1c23] border border-gray-200 shadow-sm hover:bg-gray-50" // Secondary style
+                            : "bg-[#1b1c23] text-white shadow-[0_8px_20px_-6px_rgba(27,28,35,0.2)] hover:scale-[1.02] active:scale-[0.98]" // Primary style
                         }
                         `}
             >
-              <Eye className="w-4 h-4" />
-              <span>GO TO REVEAL</span>
-              {!isRevealDisabled && <ArrowRight className="w-4 h-4" />}
+              {isRevealDisabled ? (
+                <>
+                  <Home className="w-4 h-4" />
+                  <span>RETURN HOME</span>
+                </>
+              ) : (
+                <>
+                  <Eye className="w-4 h-4" />
+                  <span>GO TO REVEAL</span>
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
             </button>
           )}
         </div>
