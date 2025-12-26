@@ -21,36 +21,51 @@ export function xoConnector() {
         type: 'xo-connect',
 
         async connect({ chainId: _chainId } = {}): Promise<any> {
-            const provider = await this.getProvider();
+            console.log("[xoConnector] connect() triggered");
+            try {
+                console.log("[xoConnector] Calling getProvider()...");
+                const provider = await this.getProvider();
+                console.log("[xoConnector] Provider obtained:", provider);
 
-            // Trigger the handshake
-            await (provider as any).request({ method: 'eth_requestAccounts' });
+                console.log("[xoConnector] Requesting accounts...");
+                await (provider as any).request({ method: 'eth_requestAccounts' });
+                console.log("[xoConnector] Accounts requested.");
 
-            const currentChainId = await this.getChainId();
-            const accounts = await this.getAccounts();
+                const currentChainId = await this.getChainId();
+                const accounts = await this.getAccounts();
 
-            return {
-                accounts: accounts as readonly `0x${string}`[],
-                chainId: currentChainId,
-            } as any;
+                return {
+                    accounts: accounts as readonly `0x${string}`[],
+                    chainId: currentChainId,
+                } as any;
+            } catch (error) {
+                console.error("[xoConnector] ❌ Connection error:", error);
+                throw error;
+            }
         },
 
         async getProvider() {
             // Singleton pattern: Only create the provider once
             if (!providerInstance) {
-                // Dynamically import the library here to prevent server-side crashes
-                const mod = await import('xo-connect');
-                const XOConnectProvider = mod.XOConnectProvider;
+                console.log("[xoConnector] Importing xo-connect library...");
+                try {
+                    const mod = await import('xo-connect');
+                    console.log("[xoConnector] Library imported. Initializing provider...");
+                    const XOConnectProvider = mod.XOConnectProvider;
 
-                const chains = config.chains;
-                // Default to the first chain in your config, or the requested one
-                const initialChain = chains[0];
-                const initialHexId = `0x${initialChain.id.toString(16)}`;
+                    const chains = config.chains;
+                    // Default to the first chain in your config, or the requested one
+                    const initialChain = chains[0];
+                    const initialHexId = `0x${initialChain.id.toString(16)}`;
 
-                providerInstance = new XOConnectProvider({
-                    rpcs: getRpcMap(chains),
-                    defaultChainId: initialHexId,
-                });
+                    providerInstance = new XOConnectProvider({
+                        rpcs: getRpcMap(chains),
+                        defaultChainId: initialHexId,
+                    });
+                } catch (e) {
+                    console.error("[xoConnector] ❌ Failed to import/init xo-connect:", e);
+                    throw e;
+                }
             }
             return providerInstance;
         },

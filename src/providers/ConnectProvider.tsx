@@ -31,10 +31,24 @@ export const ConnectProvider = ({ children }: { children: ReactNode }) => {
   const { address, isWrongNetwork } = useSmartWallet();
 
   const connect = async () => {
+    console.log("[ConnectProvider] connect called. isEmbedded:", isEmbedded);
+
     if (isEmbedded) {
+      console.log("[ConnectProvider] Available connectors:", connectors.map(c => c.id));
       const xo = connectors.find((c) => c.id === "xo-connect");
+
       if (xo) {
-        await wagmiConnect({ connector: xo });
+        console.log("[ConnectProvider] XO Connector found. Initiating connection...");
+        try {
+          await wagmiConnect({ connector: xo });
+          console.log("[ConnectProvider] Connection successful");
+        } catch (err) {
+          console.error("[ConnectProvider] Connection failed:", err);
+          throw err;
+        }
+      } else {
+        console.error("[ConnectProvider] ❌ CRITICAL: 'xo-connect' connector NOT found in Wagmi config.");
+        alert("Configuration Error: Embedded connector missing.");
       }
     } else {
       login();

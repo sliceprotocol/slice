@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import "./globals.css";
+import React from "react";
 import ContextProvider from "@/contexts/Provider";
 import { ConnectProvider } from "@/providers/ConnectProvider";
 import { EmbeddedProvider } from "@/providers/EmbeddedProvider";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist } from "next/font/google"; // Use correct imports if available, otherwise localFont
+import localFont from "next/font/local"; // Import localFont
 import { TimerProvider } from "@/contexts/TimerContext";
 import { BottomNavigation } from "@/components/layout/BottomNavigation";
 import { ConsoleOverlay } from "@/components/debug/ConsoleOverlay";
@@ -26,9 +28,10 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
+const geistMono = localFont({
+  src: "./fonts/GeistMonoVF.woff",
   variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: "100 900",
 });
 
 export default async function RootLayout({
