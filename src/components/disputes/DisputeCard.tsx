@@ -17,7 +17,7 @@ const getIconByCategory = (category: string) => {
   return "/images/icons/stellar-fund-icon.svg";
 };
 
-export type DisputeUI = Dispute & {
+type DisputeUI = Dispute & {
   votesCount?: number;
   totalVotes?: number;
   prize?: string;

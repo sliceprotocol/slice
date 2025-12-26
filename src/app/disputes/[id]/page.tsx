@@ -15,7 +15,6 @@ import {
   Gavel,
   Coins,
 } from "lucide-react";
-import { formatUnits } from "ethers";
 
 export default function DisputeOverviewPage() {
   const router = useRouter();
@@ -40,32 +39,30 @@ export default function DisputeOverviewPage() {
   // Helper to get formatted data
   const displayDispute = dispute
     ? {
-        id: dispute.id.toString(),
-        title: dispute.title || `Dispute #${dispute.id}`,
-        category: dispute.category,
-        status:
-          ["Created", "Commit", "Reveal", "Executed"][dispute.status] ||
-          "Unknown",
-        claimer: {
-          name: dispute.claimer,
-          shortName: `${dispute.claimer.slice(0, 6)}...${dispute.claimer.slice(-4)}`,
-          avatar: "/images/profiles-mockup/profile-1.jpg", // Using real avatar
-          isWinner:
-            isFinished && winnerAddress === dispute.claimer.toLowerCase(),
-        },
-        defender: {
-          name: dispute.defender,
-          shortName: `${dispute.defender.slice(0, 6)}...${dispute.defender.slice(-4)}`,
-          avatar: "/images/profiles-mockup/profile-2.jpg", // Using real avatar
-          isWinner:
-            isFinished && winnerAddress === dispute.defender.toLowerCase(),
-        },
-        description: dispute.description || "No description provided.",
-        deadline: dispute.deadline,
-        stake: dispute.requiredStake
-          ? formatUnits(dispute.requiredStake, 6)
-          : "0",
-      }
+      id: dispute.id.toString(),
+      title: dispute.title || `Dispute #${dispute.id}`,
+      category: dispute.category,
+      status:
+        ["Created", "Commit", "Reveal", "Executed"][dispute.status] ||
+        "Unknown",
+      claimer: {
+        name: dispute.claimer,
+        shortName: `${dispute.claimer.slice(0, 6)}...${dispute.claimer.slice(-4)}`,
+        avatar: "/images/profiles-mockup/profile-1.jpg", // Using real avatar
+        isWinner:
+          isFinished && winnerAddress === dispute.claimer.toLowerCase(),
+      },
+      defender: {
+        name: dispute.defender,
+        shortName: `${dispute.defender.slice(0, 6)}...${dispute.defender.slice(-4)}`,
+        avatar: "/images/profiles-mockup/profile-2.jpg", // Using real avatar
+        isWinner:
+          isFinished && winnerAddress === dispute.defender.toLowerCase(),
+      },
+      description: dispute.description || "No description provided.",
+      deadlineLabel: dispute.deadlineLabel, // Changed from deadline to deadlineLabel
+      stake: dispute.stake, // Already formatted in adapter
+    }
     : null;
 
   if (isLoading || !displayDispute) {
@@ -97,7 +94,7 @@ export default function DisputeOverviewPage() {
             <div className="flex items-center gap-1.5 text-gray-600 bg-white px-3 py-1 rounded-full border border-gray-100 shadow-sm">
               <Clock className="w-3.5 h-3.5 text-[#8c8fff]" />
               <span className="text-[10px] font-bold uppercase tracking-wide">
-                Due {displayDispute.deadline}
+                {displayDispute.deadlineLabel}
               </span>
             </div>
           </div>

@@ -1,11 +1,10 @@
 import { useCallback, useState } from "react";
 import { Contract } from "ethers";
 import { useSliceContract } from "./useSliceContract";
-import { useConnect } from "@/providers/ConnectProvider";
+import { useSmartWallet } from "@/hooks/useSmartWallet";
 import { toast } from "sonner";
 import { getContractsForChain } from "@/config/contracts";
-import { useEmbedded } from "@/providers/EmbeddedProvider";
-import { DEFAULT_CHAIN } from "@/config/chains";
+import { useContractTx } from "./useContractTx";
 
 const ERC20_ABI = [
   "function approve(address spender, uint256 amount) external returns (bool)",
@@ -29,11 +28,10 @@ async function processInBatches<T, R>(
 }
 
 export function useAssignDispute() {
-  const [isLoading, setIsLoading] = useState(false);
   const [isFinding, setIsFinding] = useState(false);
-  const { isEmbedded } = useEmbedded(); // Get context
+  const { address, signer, chainId } = useSmartWallet();
   const contract = useSliceContract();
-  const { address, signer } = useConnect();
+  const { execute, isProcessing: isLoading } = useContractTx();
 
   const isReady = !!(contract && address && signer);
 
@@ -91,21 +89,10 @@ export function useAssignDispute() {
       toast.error("Wallet not connected");
       return false;
     }
-    setIsLoading(true);
 
-    try {
+    return execute("Join Dispute", async () => {
       const disputeData = await contract!.disputes(disputeId);
-      const amountToApprove = disputeData.jurorStake;
-
-      let chainId = 0;
-
-      // FIX: Robust Chain ID detection
-      if (isEmbedded) {
-        chainId = DEFAULT_CHAIN.chain.id;
-      } else if (signer?.provider) {
-        const net = await signer.provider.getNetwork();
-        chainId = Number(net.chainId);
-      }
+      const amountToApprove = disputeData.jurorStake; // Note: Ensure this field exists on contract struct
 
       // Get BOTH contracts dynamically from the chain ID
       const { usdcToken, sliceContract: sliceAddress } =
@@ -140,36 +127,16 @@ export function useAssignDispute() {
         await new Promise((r) => setTimeout(r, 2000));
       }
       if (!approvalVerified) {
-        toast.error("Could not verify approval in time. Please try again.");
-        return false;
+        throw new Error("Could not verify approval in time.");
       }
 
       toast.info("Joining Jury...");
       // Manual gas limit to prevent simulation failure
-      const tx = await contract!.joinDispute(disputeId, { gasLimit: 300000 });
-      await tx.wait();
-
-      toast.success("Joined successfully!");
-      return true;
-    } catch (error: any) {
-      console.error("Join Error:", error);
-      const msg =
-        error.reason ||
-        error.shortMessage ||
-        error.message ||
-        "Transaction failed";
-
-      // Update generic error to include details
-      if (msg.includes("user rejected")) {
-        toast.error("Transaction cancelled by user.");
-      } else {
-        toast.error(`Join Failed: ${msg}`);
-      }
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
+      // RETURN the transaction to be waited on by execute()
+      return contract!.joinDispute(disputeId, { gasLimit: 300000 });
+    });
   };
 
   return { findActiveDispute, joinDispute, isLoading, isFinding, isReady };
 }
+

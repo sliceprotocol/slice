@@ -8,7 +8,6 @@ import { SwipeButton } from "@/components/category-amount/SwipeButton";
 import { usePayDispute } from "@/hooks/usePayDispute";
 import { useGetDispute } from "@/hooks/useGetDispute";
 import { useConnect } from "@/providers/ConnectProvider";
-import { formatUnits } from "ethers";
 
 export default function PayDisputePage() {
   const router = useRouter();
@@ -32,10 +31,9 @@ export default function PayDisputePage() {
       }
 
       // 2. Format the required stake from units (6 decimals) to USDC (String)
-      if (dispute.requiredStake) {
-        // USDC has 6 decimals.
-        const formatted = formatUnits(dispute.requiredStake, 6);
-        setStakeAmountDisplay(formatted);
+      // Note: dispute.stake is already formatted by disputeAdapter
+      if (dispute.stake) {
+        setStakeAmountDisplay(dispute.stake);
       }
     }
   }, [dispute, disputeId, router]);

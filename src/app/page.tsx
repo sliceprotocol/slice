@@ -1,15 +1,9 @@
 "use client";
 
 import React from "react";
-import { DisputesHeader } from "@/components/disputes/DisputesHeader";
-import { BalanceCard } from "@/components/disputes/BalanceCard";
-import { DisputesList } from "@/components/disputes/DisputesList";
+import { redirect } from "next/navigation";
+
 export default function DisputesPage() {
-  return (
-    <div className="flex flex-col h-full w-full">
-      <DisputesHeader />
-      <BalanceCard />
-      <DisputesList />
-    </div>
-  );
+  redirect("/disputes");
+  return <div></div>;
 }
