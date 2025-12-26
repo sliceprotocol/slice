@@ -15,7 +15,6 @@ import {
   Gavel,
   Coins,
 } from "lucide-react";
-import { formatUnits } from "ethers";
 
 export default function DisputeOverviewPage() {
   const router = useRouter();

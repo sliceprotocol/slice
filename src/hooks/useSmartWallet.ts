@@ -1,26 +1,28 @@
-import { useChainId } from "wagmi";
-import { useConnect } from "@/providers/ConnectProvider";
+import { useAccount, useChainId, useWalletClient } from "wagmi";
 import { useEmbedded } from "@/providers/EmbeddedProvider";
 import { DEFAULT_CHAIN } from "@/config/chains";
+import { walletClientToSigner } from "@/util/ethers-adapter";
+import { useMemo } from "react";
 
 export function useSmartWallet() {
+    const { address, isConnected } = useAccount();
+    const chainId = useChainId();
+    const { data: walletClient } = useWalletClient();
     const { isEmbedded } = useEmbedded();
-    const { address, signer } = useConnect(); // This already handles getting the signer for both!
 
-    // 1. Abstract Chain ID logic
-    // Wagmi's hook doesn't work in embedded mode (or returns unexpected values), so we normalize it here.
-    const wagmiChainId = useChainId();
-    const chainId = isEmbedded ? DEFAULT_CHAIN.chain.id : wagmiChainId;
+    const signer = useMemo(() => {
+        if (walletClient) {
+            return walletClientToSigner(walletClient);
+        }
+        return null;
+    }, [walletClient]);
 
-    // 2. Return a unified interface
     return {
         address,
         signer,
         chainId,
-        isConnected: !!address && !!signer,
-        // Helper to verify network (optional)
+        isConnected,
         isWrongNetwork: chainId !== DEFAULT_CHAIN.chain.id,
-        // Re-export isEmbedded just in case, but usually not needed for logic anymore
         isEmbedded
     };
 }

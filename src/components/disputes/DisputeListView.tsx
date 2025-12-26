@@ -1,8 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { DisputeCard } from "./DisputeCard";
 import { BarChartIcon } from "./icons/Icon";
-import { FilterIcon } from "./icons/BadgeIcons";
-import { X, Check, Gavel, History, Loader2 } from "lucide-react";
+import { Gavel, Loader2 } from "lucide-react";
 import type { Dispute } from "@/hooks/useDisputeList"; // Or new DisputeUI interface
 
 interface Props {
@@ -13,7 +12,7 @@ interface Props {
 
 export const DisputeListView: React.FC<Props> = ({ disputes, isLoading, onEarnClick }) => {
     const [activeTab, setActiveTab] = useState<"active" | "history">("active");
-    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+    const [selectedCategory, _setSelectedCategory] = useState<string | null>(null);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
 
     // Filter Logic
@@ -24,8 +23,6 @@ export const DisputeListView: React.FC<Props> = ({ disputes, isLoading, onEarnCl
             return matchesTab && matchesCategory;
         });
     }, [disputes, activeTab, selectedCategory]);
-
-    const categories = useMemo(() => Array.from(new Set(disputes.map(d => d.category))).filter(Boolean), [disputes]);
 
     return (
         <div className="px-5 mt-8 w-full box-border pb-32 relative">

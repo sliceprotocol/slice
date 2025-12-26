@@ -12,7 +12,6 @@ import {
   Coins,
   Scale,
 } from "lucide-react";
-import { formatUnits } from "ethers";
 import { DisputeOverviewHeader } from "@/components/dispute-overview/DisputeOverviewHeader";
 
 export default function JoinDisputePage() {

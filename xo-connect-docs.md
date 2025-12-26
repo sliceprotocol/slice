@@ -264,6 +264,7 @@ export { XOConnectProvider } from "./xo-connect-provider";
 ```
 
 ```ts
+// rpc-client.ts
 export class JsonRpcClient {
   constructor(private rpcUrl: string) {}
 
@@ -288,6 +289,7 @@ export class JsonRpcClient {
 ```
 
 ```ts
+// xo-connect-provider.ts
 import { Method, XOConnect } from "./";
 import { JsonRpcClient } from "./rpc-client";
 
