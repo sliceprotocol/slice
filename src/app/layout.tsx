@@ -4,7 +4,6 @@ import "./globals.css";
 import React from "react";
 import ContextProvider from "@/contexts/Provider";
 import { ConnectProvider } from "@/providers/ConnectProvider";
-import { EmbeddedProvider } from "@/providers/EmbeddedProvider";
 import { Geist } from "next/font/google"; // Use correct imports if available, otherwise localFont
 import localFont from "next/font/local"; // Import localFont
 import { TimerProvider } from "@/contexts/TimerContext";
@@ -47,35 +46,31 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased flex justify-center min-h-screen bg-gray-100`}
       >
-        <EmbeddedProvider>
-          <ContextProvider cookies={cookies}>
-            <AutoConnect />
-            <ConnectProvider>
-              <TimerProvider>
-                {/* Updated Structure:
+        <ContextProvider cookies={cookies}>
+          <AutoConnect />
+          <ConnectProvider>
+            <TimerProvider>
+              {/* Updated Structure:
                   1. relative: allows absolute positioning inside if needed
                   2. flex flex-col: enables the "sticky footer" layout
                 */}
-                <div className="w-full max-w-[430px] min-h-screen bg-white shadow-2xl relative flex flex-col">
-                  {/* Content grows to fill space, pushing nav to bottom */}
-                  {/* The pb adds a safe zone at the bottom of every page so content */}
-                  <div className="flex-1 flex flex-col pb-[70px]">
-                    {children}
-                  </div>
+              <div className="w-full max-w-[430px] min-h-screen bg-white shadow-2xl relative flex flex-col">
+                {/* Content grows to fill space, pushing nav to bottom */}
+                {/* The pb adds a safe zone at the bottom of every page so content */}
+                <div className="flex-1 flex flex-col pb-[70px]">{children}</div>
 
-                  {/* Persistent Bottom Navigation */}
-                  <BottomNavigation />
+                {/* Persistent Bottom Navigation */}
+                <BottomNavigation />
 
-                  {/* Debug Overlay */}
-                  {process.env.NEXT_PUBLIC_IS_EMBEDDED === "true" && (
-                    <ConsoleOverlay />
-                  )}
-                  <DebugToggle />
-                </div>
-              </TimerProvider>
-            </ConnectProvider>
-          </ContextProvider>
-        </EmbeddedProvider>
+                {/* Debug Overlay */}
+                {process.env.NEXT_PUBLIC_IS_EMBEDDED === "true" && (
+                  <ConsoleOverlay />
+                )}
+                <DebugToggle />
+              </div>
+            </TimerProvider>
+          </ConnectProvider>
+        </ContextProvider>
       </body>
     </html>
   );

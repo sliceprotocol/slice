@@ -4,7 +4,10 @@ import React, { ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { PrivyProvider } from "@privy-io/react-auth";
 import { WagmiProvider as PrivyWagmiProvider } from "@privy-io/wagmi";
-import { WagmiProvider as VanillaWagmiProvider, cookieToInitialState } from "wagmi";
+import {
+  WagmiProvider as VanillaWagmiProvider,
+  cookieToInitialState,
+} from "wagmi";
 import { PRIVY_APP_ID, PRIVY_CLIENT_ID } from "@/config/app";
 import { config } from "@/config";
 
@@ -17,14 +20,13 @@ export default function ContextProvider({
   children: ReactNode;
   cookies?: string | null;
 }) {
-  // Optional: Rehydrate Wagmi state from cookies if you use SSR
   const initialState = cookieToInitialState(config, cookies);
 
-  // Check the environment
   const isEmbedded = process.env.NEXT_PUBLIC_IS_EMBEDDED === "true";
 
-  // Select the correct provider based on environment
-  const ActiveWagmiProvider = isEmbedded ? VanillaWagmiProvider : PrivyWagmiProvider;
+  const ActiveWagmiProvider = isEmbedded
+    ? VanillaWagmiProvider
+    : PrivyWagmiProvider;
 
   return (
     <PrivyProvider

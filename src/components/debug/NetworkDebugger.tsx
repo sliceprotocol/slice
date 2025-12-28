@@ -2,8 +2,8 @@
 
 import { useAccount } from "wagmi";
 import { useConnect } from "@/providers/ConnectProvider";
-import { useEmbedded } from "@/providers/EmbeddedProvider"; // Import this
 import { defaultChain } from "@/config/chains";
+import { useEmbedded } from "@/hooks/useEmbedded";
 
 export const NetworkDebugger = () => {
   const { chain } = useAccount();
@@ -56,8 +56,9 @@ export const NetworkDebugger = () => {
             Actual_ID
           </span>
           <span
-            className={`bg-white/5 px-1.5 py-0.5 rounded ${isMatch ? "text-indigo-400" : "text-red-400"
-              }`}
+            className={`bg-white/5 px-1.5 py-0.5 rounded ${
+              isMatch ? "text-indigo-400" : "text-red-400"
+            }`}
           >
             {actualChainId}
           </span>

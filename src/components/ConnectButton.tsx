@@ -1,8 +1,6 @@
 "use client";
-
 import React, { useState } from "react";
-import { useSliceConnect } from "@/hooks/useSliceConnect"; // Updated Import
-import { useEmbedded } from "@/providers/EmbeddedProvider";
+import { useSliceConnect } from "@/hooks/useSliceConnect";
 import { toast } from "sonner";
 import { Loader2, Copy, Check, Wallet, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,10 +9,10 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useEmbedded } from "@/hooks/useEmbedded";
 
 const ConnectButton = () => {
   const { isEmbedded } = useEmbedded();
-  // 1. Use the unified hook. It handles login logic (Privy vs Embedded) internally.
   const { connect, disconnect, address, isConnecting } = useSliceConnect();
 
   const [copied, setCopied] = useState(false);
@@ -22,7 +20,7 @@ const ConnectButton = () => {
 
   const handleConnect = async () => {
     try {
-      // 2. Just call connect(). The hook decides the strategy.
+      // Call connect(). The hook decides the strategy.
       await connect();
     } catch (error) {
       console.error(error);

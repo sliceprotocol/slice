@@ -1,15 +1,15 @@
 "use client";
 
-import React, {
-  ReactNode,
-  createContext,
-  useContext,
-} from "react";
+import React, { ReactNode, createContext, useContext } from "react";
 
-import { useEmbedded } from "./EmbeddedProvider";
 import { usePrivy } from "@privy-io/react-auth";
-import { useConnect as useWagmiConnect, useDisconnect, useAccount } from "wagmi";
+import {
+  useConnect as useWagmiConnect,
+  useDisconnect,
+  useAccount,
+} from "wagmi";
 import { useSmartWallet } from "@/hooks/useSmartWallet";
+import { useEmbedded } from "@/hooks/useEmbedded";
 
 interface ConnectContextType {
   connect: () => Promise<void>;
@@ -28,15 +28,21 @@ export const ConnectProvider = ({ children }: { children: ReactNode }) => {
   const { disconnect: wagmiDisconnect } = useDisconnect();
 
   // Debugging State
-  const { status, address: wagmiAddress, chainId, isConnected, connector } = useAccount();
+  const {
+    status,
+    address: wagmiAddress,
+    chainId,
+    isConnected,
+    connector,
+  } = useAccount();
 
   React.useEffect(() => {
     console.log("⚡ [Wagmi State Change]", {
-      status,       // Should change 'disconnected' -> 'connecting' -> 'connected'
-      address: wagmiAddress,      // Should be 0x...
-      chainId,      // Should be number
-      isConnected,  // Should be true
-      connector: connector?.name // Should be 'XO Wallet'
+      status, // Should change 'disconnected' -> 'connecting' -> 'connected'
+      address: wagmiAddress, // Should be 0x...
+      chainId, // Should be number
+      isConnected, // Should be true
+      connector: connector?.name, // Should be 'XO Wallet'
     });
   }, [status, wagmiAddress, chainId, isConnected, connector]);
 
@@ -53,13 +59,17 @@ export const ConnectProvider = ({ children }: { children: ReactNode }) => {
         } catch (err: any) {
           console.error("[ConnectProvider] Connect error:", err);
 
-          if (err.name === 'ConnectorAlreadyConnectedError') {
-            console.warn("[ConnectProvider] Connector reported as already connected.");
+          if (err.name === "ConnectorAlreadyConnectedError") {
+            console.warn(
+              "[ConnectProvider] Connector reported as already connected.",
+            );
 
             // If we are "connected" but have no address, the state is corrupted.
             // Force a disconnect so the user can click "Connect" again cleanly.
             if (!address) {
-              console.warn("[ConnectProvider] No address found. Forcing disconnect to reset state.");
+              console.warn(
+                "[ConnectProvider] No address found. Forcing disconnect to reset state.",
+              );
               wagmiDisconnect();
             }
           } else {
@@ -67,7 +77,9 @@ export const ConnectProvider = ({ children }: { children: ReactNode }) => {
           }
         }
       } else {
-        console.error("[ConnectProvider] ❌ CRITICAL: 'xo-connect' connector NOT found in Wagmi config.");
+        console.error(
+          "[ConnectProvider] ❌ CRITICAL: 'xo-connect' connector NOT found in Wagmi config.",
+        );
         alert("Configuration Error: Embedded connector missing.");
       }
     } else {

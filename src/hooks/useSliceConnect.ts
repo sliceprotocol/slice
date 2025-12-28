@@ -1,6 +1,6 @@
-import { useEmbedded } from "@/providers/EmbeddedProvider";
 import { usePrivy } from "@privy-io/react-auth";
 import { useConnect, useDisconnect, useAccount } from "wagmi";
+import { useEmbedded } from "./useEmbedded";
 
 export const useSliceConnect = () => {
   const { isEmbedded } = useEmbedded();
