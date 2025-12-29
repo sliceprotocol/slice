@@ -24,6 +24,7 @@ export default function CreateDisputePage() {
 
   // Form State
   const [title, setTitle] = useState("");
+  const [claimerAddress, setClaimerAddress] = useState(""); // NEW
   const [claimerName, setClaimerName] = useState("");
   const [defenderName, setDefenderName] = useState("");
   const [category, setCategory] = useState("General");
@@ -134,6 +135,7 @@ export default function CreateDisputePage() {
 
       const success = await createDispute(
         defenderAddress,
+        claimerAddress || undefined,
         category,
         disputeData,
         jurorsRequired,
@@ -229,6 +231,23 @@ export default function CreateDisputePage() {
               <option value="Freelance">Freelance & Services</option>
               <option value="E-Commerce">E-Commerce</option>
             </select>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="font-semibold text-[#1b1c23]">
+              Claimer Address (Optional)
+            </label>
+            <input
+              type="text"
+              className="p-3 bg-[#f5f6f9] rounded-xl text-sm font-mono border-none focus:ring-2 focus:ring-[#8c8fff] outline-none"
+              placeholder="Leave empty if you are the claimer"
+              value={claimerAddress}
+              onChange={(e) => setClaimerAddress(e.target.value)}
+              disabled={isProcessing}
+            />
+            <p className="text-[10px] text-gray-400">
+              If you are creating this on behalf of someone else (e.g. a DAO), paste their address here.
+            </p>
           </div>
 
           <div className="flex flex-col gap-2">

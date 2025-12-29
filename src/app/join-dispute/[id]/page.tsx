@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter, useParams, useSearchParams } from "next/navigation";
 import { useAssignDispute } from "@/hooks/useAssignDispute";
 import { useGetDispute } from "@/hooks/useGetDispute";
 import {
@@ -17,7 +17,9 @@ import { DisputeOverviewHeader } from "@/components/dispute-overview/DisputeOver
 export default function JoinDisputePage() {
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
   const disputeId = Number(params?.id);
+  const amountParam = searchParams.get("amount") || "50"; // Default or URL param
 
   // 1. Fetch details
   const { dispute, loading: isLoadingDispute } = useGetDispute(
@@ -33,7 +35,8 @@ export default function JoinDisputePage() {
   const { joinDispute, isLoading: isJoining } = useAssignDispute();
 
   const handleConfirm = async () => {
-    const success = await joinDispute(disputeId);
+    // Pass the amount explicitly
+    const success = await joinDispute(disputeId, amountParam);
     if (success) {
       router.push(`/loading-disputes/${disputeId}`);
     }

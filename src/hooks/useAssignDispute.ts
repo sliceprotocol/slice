@@ -5,7 +5,7 @@ import {
   useAccount,
   useChainId,
 } from "wagmi";
-import { erc20Abi } from "viem";
+import { erc20Abi, parseUnits } from "viem"; // Added parseUnits
 import { SLICE_ABI, getContractsForChain } from "@/config/contracts";
 import { toast } from "sonner";
 
@@ -37,9 +37,6 @@ export function useAssignDispute() {
   const { sliceContract, usdcToken } = getContractsForChain(chainId);
 
   // 1. MATCHMAKER Logic
-  // We need to fetch disputeCount and check disputes.
-  // Using publicClient for these one-off reads is cleaner than hooks inside a callback.
-
   const findActiveDispute = useCallback(async (): Promise<number | null> => {
     if (!publicClient || !sliceContract) return null;
     setIsFinding(true);
@@ -96,7 +93,7 @@ export function useAssignDispute() {
   }, [publicClient, sliceContract]);
 
   // 2. ACTION: Join Dispute
-  const joinDispute = async (disputeId: number) => {
+  const joinDispute = async (disputeId: number, amountUSDC: string = "50") => {
     if (!address || !publicClient) {
       toast.error("Wallet not connected");
       return false;
@@ -105,16 +102,10 @@ export function useAssignDispute() {
     try {
       setIsJoining(true);
 
-      // Fetch required stake
-      const disputeData = await publicClient.readContract({
-        address: sliceContract as `0x${string}`,
-        abi: SLICE_ABI,
-        functionName: "disputes",
-        args: [BigInt(disputeId)],
-      });
-      const amountToApprove = disputeData.jurorStake;
+      // Convert readable USDC amount to BigInt (6 decimals)
+      const amountToStake = parseUnits(amountUSDC, 6);
 
-      console.log(`[Join] Required Stake: ${amountToApprove}`);
+      console.log(`[Join] Staking: ${amountUSDC} USDC (${amountToStake})`);
 
       // Check Allowance
       const allowance = await publicClient.readContract({
@@ -124,13 +115,13 @@ export function useAssignDispute() {
         args: [address, sliceContract as `0x${string}`],
       });
 
-      if (allowance < amountToApprove) {
+      if (allowance < amountToStake) {
         toast.info("Approving Stake...");
         const approveHash = await writeContractAsync({
           address: usdcToken as `0x${string}`,
           abi: erc20Abi,
           functionName: "approve",
-          args: [sliceContract as `0x${string}`, amountToApprove],
+          args: [sliceContract as `0x${string}`, amountToStake],
         });
         await publicClient.waitForTransactionReceipt({ hash: approveHash });
         toast.success("Approval confirmed.");
@@ -141,9 +132,8 @@ export function useAssignDispute() {
       const joinHash = await writeContractAsync({
         address: sliceContract as `0x${string}`,
         abi: SLICE_ABI,
-        functionName: "joinDispute", // Assuming naming is joinDispute or stake? Original used: `contract.joinDispute`.
-        // ABI in `slice-abi.ts` has `joinDispute`. Use that.
-        args: [BigInt(disputeId)],
+        functionName: "joinDispute",
+        args: [BigInt(disputeId), amountToStake], // Pass explicit amount
       });
 
       await publicClient.waitForTransactionReceipt({ hash: joinHash });
@@ -162,7 +152,7 @@ export function useAssignDispute() {
   return {
     findActiveDispute,
     joinDispute,
-    isLoading: isJoining, // Mapped to match old hook
+    isLoading: isJoining,
     isFinding,
     isReady: !!address,
   };

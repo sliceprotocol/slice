@@ -17,7 +17,7 @@ import { useCreateDispute } from "@/hooks/useCreateDispute";
 import { usePayDispute } from "@/hooks/usePayDispute";
 import { getVoteData } from "@/util/votingStorage";
 import { useExecuteRuling } from "@/hooks/useExecuteRuling";
-import { usePublicClient, useAccount } from "wagmi";
+import { usePublicClient, useAccount, useWriteContract } from "wagmi";
 import { SLICE_ABI, SLICE_ADDRESS } from "@/config/contracts";
 import { GlobalStateCard } from "@/components/debug/GlobalStateCard";
 import { DisputeInspector } from "@/components/debug/DisputeInspector";
@@ -32,6 +32,7 @@ export default function DebugPage() {
   const { address } = useAccount();
 
   const publicClient = usePublicClient();
+  const { writeContractAsync, isPending: isWriting } = useWriteContract();
 
   const {
     commitVote,
@@ -175,20 +176,41 @@ export default function DebugPage() {
   const handleQuickCreate = async () => {
     if (!address) return toast.error("Connect wallet");
 
-    // Customize your dummy data here
-    const success = await createDispute(
-      "0x000000000000000000000000000000000000dead", // Defender (Dead address for debug)
-      "General",
-      {
-        title: `Debug Dispute ${Date.now()}`,
-        description: "This is a test dispute created via the Debug Console.",
-        evidence: [],
-      },
-      3, // Jurors required
-    );
+    try {
+      toast.info("Sending custom createDispute tx...");
 
-    if (success) {
+      const hash = await writeContractAsync({
+        address: SLICE_ADDRESS,
+        abi: SLICE_ABI,
+        functionName: "createDispute",
+        args: [
+          {
+            claimer: "0x3AE66a6DB20fCC27F3DB3DE5Fe74C108A52d6F29",
+            defender: "0x58609c13942F56e17d36bcB926C413EBbD10e477",
+            category: "General",
+            ipfsHash:
+              "bafkreiamcbxmdxau7daffssq4zcpaplfg3wtfwftsmwrvl6rhcesugirvi",
+            jurorsRequired: BigInt(1),
+            paySeconds: BigInt(86400),
+            evidenceSeconds: BigInt(86400),
+            commitSeconds: BigInt(86400),
+            revealSeconds: BigInt(86400),
+          },
+        ],
+      });
+
+      toast.success("Transaction sent!");
+
+      if (publicClient) {
+        toast.info("Waiting for confirmation...");
+        await publicClient.waitForTransactionReceipt({ hash });
+        toast.success("Dispute created successfully!");
+      }
+
       setTimeout(refreshGlobalState, 2000); // Wait for block
+    } catch (e: any) {
+      console.error(e);
+      toast.error(`Create failed: ${e.shortMessage || e.message}`);
     }
   };
 
@@ -248,7 +270,7 @@ export default function DebugPage() {
       <div className="flex-1 p-5 flex flex-col gap-6 overflow-y-auto">
         <GlobalStateCard
           contractInfo={contractInfo}
-          isCreating={isCreating}
+          isCreating={isCreating || isWriting}
           onCreate={handleQuickCreate}
           myPartyDisputes={myPartyDisputes}
           myJurorDisputes={myJurorDisputes}

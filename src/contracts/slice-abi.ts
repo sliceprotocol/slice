@@ -45,6 +45,31 @@ export const sliceAbi = [
         type: "uint256",
       },
       {
+        indexed: true,
+        internalType: "address",
+        name: "party",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "string",
+        name: "ipfsHash",
+        type: "string",
+      },
+    ],
+    name: "EvidenceSubmitted",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "id",
+        type: "uint256",
+      },
+      {
         indexed: false,
         internalType: "address",
         name: "role",
@@ -58,6 +83,25 @@ export const sliceAbi = [
       },
     ],
     name: "FundsDeposited",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "user",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+    ],
+    name: "FundsWithdrawn",
     type: "event",
   },
   {
@@ -162,6 +206,51 @@ export const sliceAbi = [
     type: "event",
   },
   {
+    inputs: [],
+    name: "MAX_STAKE",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "MIN_STAKE",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    name: "balances",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [
       {
         internalType: "uint256",
@@ -209,6 +298,11 @@ export const sliceAbi = [
         components: [
           {
             internalType: "address",
+            name: "claimer",
+            type: "address",
+          },
+          {
+            internalType: "address",
             name: "defender",
             type: "address",
           },
@@ -230,6 +324,11 @@ export const sliceAbi = [
           {
             internalType: "uint256",
             name: "paySeconds",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "evidenceSeconds",
             type: "uint256",
           },
           {
@@ -348,11 +447,6 @@ export const sliceAbi = [
           },
           {
             internalType: "uint256",
-            name: "jurorStake",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
             name: "jurorsRequired",
             type: "uint256",
           },
@@ -360,6 +454,16 @@ export const sliceAbi = [
             internalType: "string",
             name: "ipfsHash",
             type: "string",
+          },
+          {
+            internalType: "uint256",
+            name: "commitsCount",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "revealsCount",
+            type: "uint256",
           },
           {
             internalType: "enum Slice.DisputeStatus",
@@ -384,6 +488,11 @@ export const sliceAbi = [
           {
             internalType: "uint256",
             name: "payDeadline",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "evidenceDeadline",
             type: "uint256",
           },
           {
@@ -487,10 +596,68 @@ export const sliceAbi = [
         name: "_id",
         type: "uint256",
       },
+      {
+        internalType: "uint256",
+        name: "_amount",
+        type: "uint256",
+      },
     ],
     name: "joinDispute",
     outputs: [],
     stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    name: "jurorStakes",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    name: "jurorStats",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "totalDisputes",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "coherentVotes",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "totalEarnings",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
     type: "function",
   },
   {
@@ -564,6 +731,37 @@ export const sliceAbi = [
       },
     ],
     stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_id",
+        type: "uint256",
+      },
+      {
+        internalType: "string",
+        name: "_ipfsHash",
+        type: "string",
+      },
+    ],
+    name: "submitEvidence",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_token",
+        type: "address",
+      },
+    ],
+    name: "withdraw",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function",
   },
 ] as const;

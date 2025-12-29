@@ -1,16 +1,18 @@
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import { useGetDispute } from "@/hooks/useGetDispute";
-import { SLICE_ADDRESS } from "@/config/contracts";
 import { useSliceVoting } from "@/hooks/useSliceVoting";
-import { useAccount } from "wagmi";
+import { useAccount, useChainId } from "wagmi";
 import { getVoteData } from "@/util/votingStorage";
+import { getContractsForChain } from "@/config/contracts";
 
 const STATUS_COMMIT = 1;
 const STATUS_REVEAL = 2;
 
 export function useVote(disputeId: string) {
+  const chainId = useChainId();
   const { address } = useAccount();
+  const { sliceContract } = getContractsForChain(chainId);
 
   // Local state
   const [selectedVote, setSelectedVote] = useState<number | null>(null);
@@ -24,7 +26,7 @@ export function useVote(disputeId: string) {
   // Load vote from local storage
   useEffect(() => {
     if (typeof window !== "undefined" && address) {
-      const stored = getVoteData(SLICE_ADDRESS, disputeId, address);
+      const stored = getVoteData(sliceContract, disputeId, address);
 
       if (stored) {
         setHasCommittedLocally(true);

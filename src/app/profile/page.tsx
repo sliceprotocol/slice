@@ -1,47 +1,22 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Terminal, Bug, Trophy, Flame, Target } from "lucide-react";
+import { ArrowLeft, Terminal, Bug, Trophy, Flame, Target, Wallet } from "lucide-react";
 import ConnectButton from "@/components/ConnectButton";
-import { useReadContract, useAccount } from "wagmi";
-import { SLICE_ABI, SLICE_ADDRESS } from "@/config/contracts";
+import { useJurorStats } from "@/hooks/useJurorStats";
+import { useWithdraw } from "@/hooks/useWithdraw";
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { address } = useAccount();
 
-  // --- 1. Fetch Juror Data (Wagmi Style) ---
-  const { data: jurorDisputes } = useReadContract({
-    address: SLICE_ADDRESS,
-    abi: SLICE_ABI,
-    functionName: "getJurorDisputes",
-    args: address ? [address as `0x${string}`] : undefined,
-    query: {
-      enabled: !!address,
-    },
-  });
+  // 1. Fetch Stats
+  const { stats, rank } = useJurorStats();
 
-  // --- State ---
-  const [stats, setStats] = useState({
-    coherence: 100,
-    totalCases: 0,
-    streak: 3,
-  });
-  const [earnings, setEarnings] = useState("0");
+  // 2. Fetch Withdraw Data
+  const { withdraw, isWithdrawing, claimableAmount, hasFunds } = useWithdraw();
 
-  useEffect(() => {
-    if (jurorDisputes) {
-      setStats((prev) => ({
-        ...prev,
-        totalCases: (jurorDisputes as any[]).length,
-      }));
-      setEarnings("1,240.50"); // Mock data
-    }
-  }, [jurorDisputes]);
-
-  const openConsole = () =>
-    window.dispatchEvent(new Event("open-debug-console"));
+  const openConsole = () => window.dispatchEvent(new Event("open-debug-console"));
 
   return (
     <div className="flex flex-col min-h-screen bg-[#F8F9FC] pb-32">
@@ -60,6 +35,29 @@ export default function ProfilePage() {
       </div>
 
       <div className="flex-1 px-6 flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+
+        {/* --- WITHDRAW CARD (New) --- */}
+        {hasFunds && (
+          <div className="bg-[#1b1c23] rounded-3xl p-6 text-white shadow-lg shadow-indigo-200">
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Claimable Earnings</span>
+                <div className="text-3xl font-black mt-1">{claimableAmount} USDC</div>
+              </div>
+              <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center">
+                <Wallet className="w-6 h-6 text-white" />
+              </div>
+            </div>
+            <button
+              onClick={() => withdraw()}
+              disabled={isWithdrawing}
+              className="w-full py-3 bg-white text-[#1b1c23] rounded-xl font-bold hover:bg-gray-200 transition-colors disabled:opacity-50"
+            >
+              {isWithdrawing ? "Processing..." : "Withdraw to Wallet"}
+            </button>
+          </div>
+        )}
+
         {/* ... Hero Card ... */}
         <div className="relative w-full rounded-4xl p-1 bg-linear-to-b from-gray-100 to-white shadow-xl shadow-gray-200/50">
           <div className="bg-[#1b1c23] rounded-[30px] p-6 pb-8 text-white flex flex-col items-center gap-6 relative overflow-hidden">
@@ -74,7 +72,7 @@ export default function ProfilePage() {
                   />
                 </div>
                 <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-linear-to-r from-[#8c8fff] to-[#7a7de0] text-white text-[10px] font-extrabold px-3 py-1 rounded-full shadow-lg border-[3px] border-[#1b1c23] z-20 whitespace-nowrap">
-                  LVL 5 JUROR
+                  {rank}
                 </div>
               </div>
             </div>
@@ -82,7 +80,7 @@ export default function ProfilePage() {
             {/* Name & Address */}
             <div className="flex flex-col items-center gap-3 z-10 w-full">
               <h2 className="font-manrope font-black text-2xl tracking-tight">
-                High Arbiter
+                {rank}
               </h2>
               <div className="scale-95 hover:scale-100 transition-transform duration-200">
                 <ConnectButton />
@@ -99,7 +97,7 @@ export default function ProfilePage() {
                   Accuracy
                 </span>
                 <span className="text-base font-extrabold text-white">
-                  {stats.coherence}%
+                  {stats.accuracy}
                 </span>
               </div>
 
@@ -111,7 +109,7 @@ export default function ProfilePage() {
                   Cases
                 </span>
                 <span className="text-base font-extrabold text-white">
-                  {stats.totalCases}
+                  {stats.matches}
                 </span>
               </div>
 
@@ -120,10 +118,10 @@ export default function ProfilePage() {
                   <Flame className="w-4 h-4 text-orange-400" />
                 </div>
                 <span className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">
-                  Streak
+                  Wins
                 </span>
                 <span className="text-base font-extrabold text-white">
-                  {stats.streak}
+                  {stats.wins}
                 </span>
               </div>
             </div>
@@ -141,7 +139,7 @@ export default function ProfilePage() {
                 Lifetime Earnings
               </span>
               <div className="text-3xl font-black text-gray-800 tracking-tight">
-                ${earnings}
+                {stats.earnings} USDC
               </div>
             </div>
             <div className="w-14 h-14 rounded-2xl bg-[#eff0ff] flex items-center justify-center text-[#8c8fff] group-hover:scale-110 transition-transform duration-300">

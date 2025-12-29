@@ -12,6 +12,7 @@ export interface DisputeUI {
   stake: string;
   jurorsRequired: number;
   revealDeadline: number;
+  evidenceDeadline?: number; // NEW
   description: string;
   evidence: string[];
   claimer: string;
@@ -111,6 +112,7 @@ export async function transformDisputeData(
       : "0",
     jurorsRequired: Number(contractData.jurorsRequired),
     revealDeadline: Number(contractData.revealDeadline),
+    evidenceDeadline: Number(contractData.evidenceDeadline), // NEW
     description,
     evidence,
     claimer: contractData.claimer,

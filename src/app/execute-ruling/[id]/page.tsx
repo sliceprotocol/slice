@@ -7,12 +7,13 @@ import { useExecuteRuling } from "@/hooks/useExecuteRuling";
 import { SuccessAnimation } from "@/components/SuccessAnimation";
 import { useSwipeGesture } from "@/hooks/useSwipeGesture";
 import {
+
   Loader2,
   ArrowLeft,
   Wallet,
   Trophy,
   Coins,
-  ArrowRight,
+  Gavel,
 } from "lucide-react";
 import { toast } from "sonner";
 import { PaginationDots } from "@/components/dispute-overview/PaginationDots";
@@ -46,7 +47,11 @@ export default function ExecuteRulingPage() {
 
   const handleAnimationComplete = () => {
     setShowSuccess(false);
-    router.push("/disputes"); // Or profile to see updated balance
+    // Redirect to profile where the Withdraw button lives
+    toast.info(
+      "Ruling executed! You can now withdraw your funds from your Profile.",
+    );
+    router.push("/profile");
   };
 
   // --- Logic: Mock Reward Calculation ---
@@ -89,12 +94,12 @@ export default function ExecuteRulingPage() {
           </div>
 
           <h1 className="text-2xl font-extrabold text-[#1b1c23] mb-2 leading-tight">
-            {isFinished ? "Rewards Claimed" : "Funds Ready to Withdraw"}
+            {isFinished ? "Ruling Executed" : "Finalize Ruling"}
           </h1>
           <p className="text-sm text-gray-500 font-medium max-w-[260px]">
             {isFinished
-              ? "The ruling has been executed and funds have been distributed."
-              : "The dispute is resolved. Finalize the ruling to reclaim your stake and rewards."}
+              ? "The ruling has been executed. Go to your Profile to withdraw your funds."
+              : "Finalize the ruling to unlock funds for withdrawal."}
           </p>
         </div>
 
@@ -161,10 +166,11 @@ export default function ExecuteRulingPage() {
 
           {isFinished ? (
             <button
-              onClick={() => router.push("/disputes")}
-              className="w-full py-4 px-6 bg-white border border-gray-200 text-[#1b1c23] rounded-2xl font-bold text-sm shadow-sm hover:bg-gray-50 transition-all flex items-center justify-center gap-2"
+              onClick={() => router.push("/profile")}
+              className="w-full py-4 px-6 bg-[#1b1c23] border border-gray-200 text-white rounded-2xl font-bold text-sm shadow-xl hover:bg-[#2c2d33] transition-all flex items-center justify-center gap-2"
             >
-              <span>Return to Home</span>
+              <Wallet className="w-4 h-4" />
+              <span>Go to Profile to Withdraw</span>
             </button>
           ) : (
             <button
@@ -173,11 +179,10 @@ export default function ExecuteRulingPage() {
               className={`
                  w-full py-4 px-6 rounded-2xl font-semibold tracking-wide transition-all duration-300 shadow-[0_8px_20px_-6px_rgba(140,143,255,0.4)]
                  flex items-center justify-center gap-2
-                 ${
-                   isExecuting
-                     ? "bg-gray-100 text-gray-400 cursor-not-allowed shadow-none"
-                     : "bg-[#1b1c23] text-white hover:scale-[1.02] active:scale-[0.98]"
-                 }
+                 ${isExecuting
+                  ? "bg-gray-100 text-gray-400 cursor-not-allowed shadow-none"
+                  : "bg-[#1b1c23] text-white hover:scale-[1.02] active:scale-[0.98]"
+                }
                `}
             >
               {isExecuting ? (
@@ -187,9 +192,8 @@ export default function ExecuteRulingPage() {
                 </>
               ) : (
                 <>
-                  <Wallet className="w-4 h-4" />
-                  <span>WITHDRAW FUNDS</span>
-                  <ArrowRight className="w-4 h-4 opacity-60" />
+                  <Gavel className="w-4 h-4" />
+                  <span>EXECUTE RULING</span>
                 </>
               )}
             </button>

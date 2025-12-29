@@ -17,7 +17,7 @@ export const SUPPORTED_CHAINS: ChainConfig[] = [
     contracts: {
       slice:
         process.env.NEXT_PUBLIC_BASE_SLICE_CONTRACT ||
-        "0xD8A10bD25e0E5dAD717372fA0C66d3a59a425e4D",
+        "0xC0533D1a46c23292d9132336C624175949D6B61f",
       usdc: "0x036CbD53842c5426634e7929541eC2318f3dCF7e", // Base Sepolia USDC
     },
   },

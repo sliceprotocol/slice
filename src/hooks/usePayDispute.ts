@@ -27,7 +27,6 @@ export function usePayDispute() {
     try {
       setLoading(true);
 
-      // 1. Get Contracts
       const { usdcToken, sliceContract } = getContractsForChain(chainId);
 
       // Convert amount to BigInt (assuming 6 decimals for USDC)
@@ -37,8 +36,7 @@ export function usePayDispute() {
       setStep("approving");
       toast.info("Approving tokens...");
 
-      // We should check allowance first to avoid redundant approval
-      // Reading allowance
+      // We check allowance first to avoid redundant approval
       const allowance = await publicClient.readContract({
         address: usdcToken as `0x${string}`,
         abi: erc20Abi,
@@ -65,31 +63,11 @@ export function usePayDispute() {
       setStep("paying");
       toast.info("Paying dispute...");
 
-      // Estimate gas logic is handled by Wagmi implicitly, or we can add it if needed.
-      // Ethers code had estimateGas * 1.2
-      // Wagmi automatically estimates. If we need buffer, we can pass gas in options.
-      // For now, let's rely on standard estimation.
-
-      // Function name in contract is `fundAppeal` or similar?
-      // Checked `payDispute.ts` view_file -> it calls `contract.payDispute`.
-      // The ABI in `slice-abi.ts` has `payDispute`.
-
       const payHash = await writeContractAsync({
         address: sliceContract as `0x${string}`,
         abi: SLICE_ABI,
         functionName: "payDispute",
-        args: [BigInt(disputeId)], // NOTE: Original hook had no amount arg for payDispute, just ID?
-        // Wait, wait. Original code: `contract.payDispute(disputeId, { gasLimit })`
-        // It seems `payDispute` does NOT take an amount argument in the function vars?
-        // Let's re-read the ABI in `slice-abi.ts`.
-        // ABI: `payDispute(uint256 _id)` - correct. It pulls the required amount from the user's balance/allowance internally?
-        // No, `payDispute` in solidity usually transfers `requiredStake` from msg.sender.
-        // Wait, why did the hook convert `amountStr`?
-        // Ah, the hook used `amountToApprove = disputeData.requiredStake`.
-        // The `amountStr` argument in `payDispute` function signature was unused in the original code logic?
-        // Original: `payDispute = async (..., _amountStr) ... const amountToApprove = disputeData.requiredStake`
-        // So `_amountStr` was ignored or used for UI validaton?
-        // I will trust the contract's `requiredStake` like the original code did.
+        args: [BigInt(disputeId)],
       });
 
       // Wait for payment to be mined
@@ -111,7 +89,6 @@ export function usePayDispute() {
 
   return {
     payDispute,
-    // Match the original return names for compatibility if possible, or update consumers
     isPaying: loading,
     step,
   };
