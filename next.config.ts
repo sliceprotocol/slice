@@ -16,33 +16,10 @@ const withPWA = withPWAInit({
 
 const nextConfig: NextConfig = {
   transpilePackages: ["xo-connect"],
-  webpack: (config) => {
-    // These aliases mark React Native / Solana-related modules as "unresolvable"
-    // in the browser bundle. This prevents webpack from trying to include
-    // Node- or React Native–only dependencies that are incompatible with Next.js
-    // on the client, and preserves React Native compatibility without breaking
-    // the web build.
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      "@react-native-async-storage/async-storage": false,
-      "@solana/web3.js": false,
-      "@solana-program/system": false,
-      "@solana-program/token": false,
-      "@solana-program/memo": false,
-      "@solana/kit": false,
-      bs58: false,
-    };
 
-    config.resolve.fallback = {
-      ...config.resolve.fallback,
-      fs: false,
-      net: false,
-      tls: false,
-    };
-
-    config.externals.push("pino-pretty", "lokijs", "encoding");
-    return config;
-  },
+  // Tells Next.js 16: "I know plugins might be injecting webpack config,
+  // but I want to use Turbopack anyway."
+  turbopack: {},
 };
 
 export default withPWA(nextConfig);
