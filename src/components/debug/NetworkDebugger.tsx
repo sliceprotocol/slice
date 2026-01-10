@@ -2,19 +2,12 @@
 
 import { useAccount } from "wagmi";
 import { defaultChain } from "@/config/chains";
-import { useEmbedded } from "@/hooks/useEmbedded";
 
 export const NetworkDebugger = () => {
   const { chain, address } = useAccount();
-  const { isEmbedded } = useEmbedded(); // Get embedded state
 
-  // Logic: If embedded, we rely on the Default Chain (XO enforces this).
-  // If web (Wagmi), we use the detected chain from the wallet.
-  const actualChainId = isEmbedded
-    ? address
-      ? defaultChain.id
-      : "N/A" // embedded
-    : chain?.id || "N/A"; // web
+  // Logic: Pure Wagmi chain detection
+  const actualChainId = chain?.id || "N/A";
   const isMatch = actualChainId === defaultChain.id;
 
   // Note: Visibility is handled by the parent (DebugToggle)
@@ -36,10 +29,10 @@ export const NetworkDebugger = () => {
         <div className="flex justify-between items-center">
           <span className="text-gray-500 uppercase tracking-tighter">Mode</span>
           <span className="bg-white/5 px-1.5 py-0.5 rounded text-gray-300">
-            {isEmbedded ? "EMBEDDED (XO)" : "WEB (WAGMI)"}
+            WEB (WAGMI)
           </span>
         </div>
-        <div className="h-[1px] bg-white/5 w-full" />
+        <div className="h-px bg-white/5 w-full" />
 
         <div className="flex justify-between items-center">
           <span className="text-gray-500 uppercase tracking-tighter">
@@ -61,7 +54,7 @@ export const NetworkDebugger = () => {
             {actualChainId}
           </span>
         </div>
-        <div className="h-[1px] bg-white/5 w-full" />
+        <div className="h-px bg-white/5 w-full" />
         <div className="flex justify-between items-center">
           <span className="text-gray-500 uppercase tracking-tighter">
             Signer_Status

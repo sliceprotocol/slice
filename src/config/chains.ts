@@ -1,4 +1,4 @@
-import { baseSepolia, base, scrollSepolia, scroll } from "wagmi/chains";
+import { baseSepolia, base } from "wagmi/chains";
 
 import type { Chain } from "viem";
 

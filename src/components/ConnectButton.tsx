@@ -10,10 +10,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useEmbedded } from "@/hooks/useEmbedded";
 
 const ConnectButton = () => {
-  const { isEmbedded } = useEmbedded();
   const { connect, disconnect } = useSliceConnect();
   const { address, status } = useAccount();
   const isConnecting = status === "connecting" || status === "reconnecting";
@@ -82,7 +80,7 @@ const ConnectButton = () => {
                 <User size={16} /> Account
               </h4>
               <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold uppercase text-[#8c8fff]">
-                {isEmbedded ? "Embedded" : "Connected"}
+                Connected
               </span>
             </div>
 
