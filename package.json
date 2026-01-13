@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@ducanh2912/next-pwa": "^10.2.9",
+    "@farcaster/miniapp-sdk": "^0.2.1",
     "@privy-io/react-auth": "^3.9.1",
     "@privy-io/wagmi": "^2.1.2",
     "@radix-ui/react-dialog": "^1.1.15",
