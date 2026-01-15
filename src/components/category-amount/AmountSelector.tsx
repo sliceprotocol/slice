@@ -5,7 +5,7 @@ interface AmountSelectorProps {
   onAmountChange: (amount: number) => void;
 }
 
-const AMOUNTS = [1, 25, 50, 75, 100];
+const AMOUNTS = [1, 5, 10, 20];
 
 export const AmountSelector: React.FC<AmountSelectorProps> = ({
   selectedAmount,

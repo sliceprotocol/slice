@@ -9,8 +9,8 @@ import { DisputeOverviewHeader } from "@/components/dispute-overview/DisputeOver
 
 export default function CategoryAmountPage() {
   const router = useRouter();
-  // Default to 50 USDC (middle option)
-  const [selectedAmount, setSelectedAmount] = useState<number>(50);
+  // Default to 5 USDC (middle left option)
+  const [selectedAmount, setSelectedAmount] = useState<number>(5);
   const [category, setCategory] = useState("Select a category");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 

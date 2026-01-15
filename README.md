@@ -87,38 +87,40 @@ Integrating Slice into your protocol is as simple as 1-2-3:
 ## Getting Started
 
 1.  **Configure Environment:**
-    Rename `.env.example` to `.env.local` and add your keys. Note that specific strategies (like Lemon) may require additional variables if running locally.
+Rename `.env.example` to `.env.local` and add your keys. Note that specific strategies (like Lemon) may require additional variables if running locally.
 
-    ```bash
+```bash
     NEXT_PUBLIC_APP_ENV="development" # or 'production'
-
+    
     # Pinata / IPFS Config
+    # https://app.pinata.cloud/   
     NEXT_PUBLIC_PINATA_JWT="your_pinata_jwt"
     NEXT_PUBLIC_PINATA_GATEWAY_URL="your_gateway_url"
-
+    
     # Privy Config (For PWA/Base/Farcaster)
+    # https://dashboard.privy.io/
     NEXT_PUBLIC_PRIVY_APP_ID="your_privy_app_id"
     NEXT_PUBLIC_PRIVY_CLIENT_ID="your_privy_client_id"
     
     # Contracts
     NEXT_PUBLIC_BASE_SLICE_CONTRACT="0x..."
     NEXT_PUBLIC_BASE_USDC_CONTRACT="0x..."
-    ```
+```
 
 2.  **Install dependencies:**
 
-    ```bash
+```bash
     pnpm install
-    ```
+```
 
 3.  **Run Development Server:**
 
-    ```bash
+```bash
     pnpm run dev
-    ```
+```
 
-    * **PWA Mode:** Open `http://localhost:3000`
-    * **Lemon Mode:** Use a tunnel or specific port configuration to simulate the Lemon environment if needed, or set `NEXT_PUBLIC_FORCE_STRATEGY="lemon"` for UI testing.
+* **PWA Mode:** Open `http://localhost:3000`
+* **Miniapp Mode:** Use the native testing environment given by the Miniapp SDK.
 
 ---
 
