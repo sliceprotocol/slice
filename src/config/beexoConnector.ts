@@ -1,5 +1,4 @@
 import { createConnector, CreateConnectorFn } from "wagmi";
-import { XOConnectProvider } from "xo-connect";
 import { getAddress } from "viem";
 
 // Use the Base Mainnet settings we verified
@@ -14,6 +13,8 @@ export function beexoConnector(): CreateConnectorFn {
 
     // 1. Connect Logic
     async connect(_parameters) {
+      const { XOConnectProvider } = await import("xo-connect");
+
       // Instantiate the provider we tested earlier
       const provider = new XOConnectProvider({
         rpcs: { [CHAIN_ID_HEX]: RPC_URL },
@@ -42,6 +43,7 @@ export function beexoConnector(): CreateConnectorFn {
 
     // 3. Get Accounts
     async getAccounts() {
+      const { XOConnectProvider } = await import("xo-connect");
       const provider = new XOConnectProvider({
         rpcs: { [CHAIN_ID_HEX]: RPC_URL },
         defaultChainId: CHAIN_ID_HEX,
@@ -60,6 +62,7 @@ export function beexoConnector(): CreateConnectorFn {
     // 5. Provider Passthrough (Crucial!)
     // This tells Wagmi: "Use THIS provider for all contract calls"
     async getProvider() {
+      const { XOConnectProvider } = await import("xo-connect");
       return new XOConnectProvider({
         rpcs: { [CHAIN_ID_HEX]: RPC_URL },
         defaultChainId: CHAIN_ID_HEX,
