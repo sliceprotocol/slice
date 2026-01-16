@@ -16,8 +16,8 @@ export const SUPPORTED_CHAINS: ChainConfig[] = [
   {
     chain: baseSepolia,
     contracts: {
-      slice: process.env.NEXT_PUBLIC_BASE_SLICE_CONTRACT!,
-      usdc: process.env.NEXT_PUBLIC_BASE_USDC_CONTRACT!,
+      slice: process.env.NEXT_PUBLIC_BASE_SEPOLIA_SLICE_CONTRACT!,
+      usdc: process.env.NEXT_PUBLIC_BASE_SEPOLIA_USDC_CONTRACT!,
     },
   },
   {
