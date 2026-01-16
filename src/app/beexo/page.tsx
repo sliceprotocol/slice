@@ -1,15 +1,15 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { XOConnectProvider, XOConnect } from "xo-connect";
 import { createWalletClient, custom, parseEther, formatEther } from "viem";
-import { baseSepolia } from "viem/chains";
+import { base } from "viem/chains";
 import { Wallet, Send, Loader2, AlertTriangle, Terminal } from "lucide-react";
 import { toast } from "sonner";
 
-// Configuration for Base Sepolia
-const CHAIN_ID_HEX = "0x14a34"; // 84532
-const RPC_URL = "https://sepolia.base.org"; // Public RPC for demo
+// Configuration for Base Mainnet
+const CHAIN_ID_HEX = "0x2105"; // 8453 (Base Mainnet)
+const RPC_URL = "https://mainnet.base.org"; // Public RPC for Mainnet
 
 export default function BeexoPage() {
   const [address, setAddress] = useState<string | null>(null);
@@ -40,7 +40,7 @@ export default function BeexoPage() {
 
       // Create a Viem Wallet Client using the XO provider as custom transport
       const client = createWalletClient({
-        chain: baseSepolia,
+        chain: base,
         transport: custom(provider as any),
       });
 
@@ -59,7 +59,6 @@ export default function BeexoPage() {
 
     try {
       // CHECK 1: Is the bridge injected?
-      // XOConnect waits 5 seconds for this. We check it instantly.
       if (
         typeof window !== "undefined" &&
         !(window as unknown as Record<string, unknown>)["XOConnect"]
@@ -67,38 +66,31 @@ export default function BeexoPage() {
         addLog("❌ CRITICAL: window.XOConnect is undefined.");
         addLog("   -> You are likely NOT in the Beexo environment.");
         addLog("   -> The library will hang for 5s then fail.");
-        // We don't return here to let the library prove us right,
-        // but in production you should return.
       } else {
         addLog("✅ window.XOConnect found. Bridge is active.");
       }
 
       // CHECK 2: Initialize Provider
-      // This is synchronous and should not hang.
       addLog("1. Initializing Provider...");
       const provider = new XOConnectProvider({
         rpcs: { [CHAIN_ID_HEX]: RPC_URL },
         defaultChainId: CHAIN_ID_HEX,
       });
 
-      // We recreate the client to ensure we use the new provider instance
       const client = createWalletClient({
-        chain: baseSepolia,
+        chain: base, // <--- CHANGED: Use Base Mainnet
         transport: custom(provider as any),
       });
       setWalletClient(client);
       addLog("✅ Provider initialized.");
 
-      // CHECK 3: The Handshake (The likely hang spot)
-      // requestAddresses triggers XOConnect.connect() internally.
-      // This involves: UUID gen -> postMessage -> Wallet Signature -> Verification
+      // CHECK 3: The Handshake
       addLog("2. Calling requestAddresses (Handshake started)...");
       addLog("   -> If this hangs >5s, the Wallet is not replying.");
       addLog(
         "   -> If it hangs ~10s, the Signature Verification failed silently.",
       );
 
-      // We race the request against a logger to give you visual feedback
       const addresses = (await Promise.race([
         client.requestAddresses(),
         new Promise((_, reject) =>
@@ -111,7 +103,7 @@ export default function BeexoPage() {
 
       addLog(`3. Handshake returned. Data: ${JSON.stringify(addresses)}`);
 
-      // CHECK 4: Account Validation & Raw Data Inspection
+      // CHECK 4: Account Validation
       if (!addresses || addresses.length === 0) {
         addLog("⚠️ Connected, but NO accounts returned.");
         addLog(`   -> Wallet might not support Chain ID: ${CHAIN_ID_HEX}`);
@@ -119,7 +111,6 @@ export default function BeexoPage() {
         // --- RAW DATA INSPECTION ---
         addLog("🕵️ INSPECTING RAW WALLET DATA...");
         try {
-          // We call the lower-level getClient() directly to see what the wallet actually sent
           const rawClient = await XOConnect.getClient();
 
           if (!rawClient) {
@@ -128,7 +119,6 @@ export default function BeexoPage() {
             addLog(`Client Alias: ${rawClient.alias}`);
             addLog("--- SUPPORTED CURRENCIES ---");
 
-            // Log every currency and its Chain ID to find the mismatch
             if (rawClient.currencies && rawClient.currencies.length > 0) {
               rawClient.currencies.forEach((c: any, i: number) => {
                 addLog(`[${i}] ID: ${c.id}`);
@@ -158,15 +148,11 @@ export default function BeexoPage() {
       addLog("❌ FATAL ERROR CAUGHT:");
       addLog(`   Message: ${err.message}`);
 
-      // Specific error mapping for XOConnect quirks
       if (err.message.includes("No connection available")) {
         addLog("   [Analysis]: 'window.XOConnect' was never found.");
       }
       if (err.message.includes("Invalid signature")) {
         addLog("   [Analysis]: Wallet signed data, but verification failed.");
-        addLog(
-          "   [Analysis]: Ensure wallet returns 'ethereum.mainnet.native.eth' ID.",
-        );
       }
       if (err.message.includes("TIMEOUT_MONITOR")) {
         addLog("   [Analysis]: The handshake exceeded 15s timeout.");
@@ -208,11 +194,11 @@ export default function BeexoPage() {
     addLog("Initiating Transaction...");
 
     try {
-      // 0.0001 ETH
-      const amount = parseEther("0.0001");
+      // 0.00001 ETH (Reduced amount for Mainnet Safety)
+      const amount = parseEther("0.00001");
 
-      // Arbitrary recipient (burn address for demo)
-      const to = "0x000000000000000000000000000000000000dEaD";
+      // Recipient
+      const to = "0x3AE66a6DB20fCC27F3DB3DE5Fe74C108A52d6F29";
 
       addLog(`Sending ${formatEther(amount)} ETH to ${to}...`);
 
@@ -239,17 +225,17 @@ export default function BeexoPage() {
       {/* Header */}
       <div className="px-6 py-6 bg-white shadow-sm z-10">
         <h1 className="text-2xl font-extrabold text-[#1b1c23] flex items-center gap-2">
-          <span className="text-orange-500">Beexo</span> Integration
+          <span className="text-blue-600">Base</span> Integration
         </h1>
         <p className="text-xs font-medium text-gray-400 mt-1">
-          XOConnect + Viem + Base Sepolia
+          XOConnect + Viem + Base Mainnet (0x2105)
         </p>
       </div>
 
       <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6">
         {/* Connection Card */}
         <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center text-center gap-4">
-          <div className="w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center text-orange-500 mb-2">
+          <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center text-blue-500 mb-2">
             <Wallet className="w-8 h-8" />
           </div>
 
@@ -283,7 +269,7 @@ export default function BeexoPage() {
                   {address}
                 </span>
                 <span className="text-xs font-bold text-gray-400 mt-2">
-                  Balance: {Number(balance).toFixed(4)} ETH
+                  Balance: {Number(balance).toFixed(5)} ETH
                 </span>
               </div>
             </>
@@ -295,18 +281,18 @@ export default function BeexoPage() {
           <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col gap-4">
             <h3 className="text-base font-bold text-[#1b1c23]">Actions</h3>
 
-            <div className="p-4 bg-yellow-50 rounded-xl border border-yellow-100 flex gap-3 items-start">
-              <AlertTriangle className="w-5 h-5 text-yellow-600 shrink-0 mt-0.5" />
-              <p className="text-xs text-yellow-800 leading-relaxed font-medium">
-                This will send <strong>0.0001 ETH</strong> on Base Sepolia to a
-                burn address. Ensure you have testnet funds.
+            <div className="p-4 bg-red-50 rounded-xl border border-red-100 flex gap-3 items-start">
+              <AlertTriangle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+              <p className="text-xs text-red-800 leading-relaxed font-medium">
+                <strong>CAUTION:</strong> This is <strong>Base Mainnet</strong>.
+                This action will send <strong>0.00001 ETH</strong> (Real Funds).
               </p>
             </div>
 
             <button
               onClick={handleSendTransaction}
               disabled={isSending}
-              className="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-indigo-700 transition-colors disabled:opacity-50"
+              className="w-full py-4 bg-blue-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors disabled:opacity-50"
             >
               {isSending ? (
                 <>
