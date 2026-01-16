@@ -1,222 +1,102 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { XOConnectProvider, XOConnect } from "xo-connect";
-import { createWalletClient, custom, parseEther, formatEther } from "viem";
-import { base } from "viem/chains";
+import React, { useState, useEffect } from "react";
+import { useConnect, useAccount, useBalance, useSendTransaction } from "wagmi";
+import { parseEther, formatEther } from "viem";
 import { Wallet, Send, Loader2, AlertTriangle, Terminal } from "lucide-react";
 import { toast } from "sonner";
 
-// Configuration for Base Mainnet
-const CHAIN_ID_HEX = "0x2105"; // 8453 (Base Mainnet)
-const RPC_URL = "https://mainnet.base.org"; // Public RPC for Mainnet
+// Note: No XOConnect imports needed here anymore!
+// Wagmi handles it via the connector you added to src/config/index.ts
 
 export default function BeexoPage() {
-  const [address, setAddress] = useState<string | null>(null);
-  const [balance, setBalance] = useState<string>("0");
-  const [isConnecting, setIsConnecting] = useState(false);
-  const [isSending, setIsSending] = useState(false);
-  const [logs, setLogs] = useState<string[]>([]);
-  const [walletClient, setWalletClient] = useState<any>(null);
+  // 1. Hook into Global Wagmi Context
+  const { connect, connectors, isPending: isConnecting } = useConnect();
+  const { address, isConnected, chainId } = useAccount();
+  const { data: balanceData } = useBalance({ address });
+  const { sendTransactionAsync, isPending: isSending } = useSendTransaction();
 
-  // Helper to add debug logs to UI
+  const [logs, setLogs] = useState<string[]>([]);
+
   const addLog = (msg: string) => {
     setLogs((prev) => [`[${new Date().toLocaleTimeString()}] ${msg}`, ...prev]);
     console.log(`[Beexo] ${msg}`);
   };
 
-  // 1. Initialize Provider
+  // 2. Auto-Connect Strategy
+  // We check if we are in the Beexo iframe and trigger the specific connector
   useEffect(() => {
-    try {
-      addLog("Initializing XOConnectProvider...");
+    if (
+      !isConnected &&
+      typeof window !== "undefined" &&
+      (window as unknown as Record<string, unknown>)["XOConnect"]
+    ) {
+      addLog("Found XOConnect environment. Attempting auto-connect...");
 
-      // The Provider acts as the EIP-1193 bridge
-      const provider = new XOConnectProvider({
-        rpcs: {
-          [CHAIN_ID_HEX]: RPC_URL,
-        },
-        defaultChainId: CHAIN_ID_HEX,
-      });
+      const beexoConnector = connectors.find((c) => c.id === "beexo");
 
-      // Create a Viem Wallet Client using the XO provider as custom transport
-      const client = createWalletClient({
-        chain: base,
-        transport: custom(provider as any),
-      });
-
-      addLog("Client is: " + client);
-      setWalletClient(client);
-      addLog("Viem Client ready with XO Transport.");
-    } catch (err: any) {
-      addLog(`Init Error: ${err.message}`);
-    }
-  }, []);
-
-  // 2. Connect Action
-  const handleConnect = async () => {
-    setIsConnecting(true);
-    addLog("--- STARTING DEBUG SEQUENCE ---");
-
-    try {
-      // CHECK 1: Is the bridge injected?
-      if (
-        typeof window !== "undefined" &&
-        !(window as unknown as Record<string, unknown>)["XOConnect"]
-      ) {
-        addLog("❌ CRITICAL: window.XOConnect is undefined.");
-        addLog("   -> You are likely NOT in the Beexo environment.");
-        addLog("   -> The library will hang for 5s then fail.");
+      if (beexoConnector) {
+        connect({ connector: beexoConnector });
       } else {
-        addLog("✅ window.XOConnect found. Bridge is active.");
+        addLog("❌ Error: 'beexo' connector not found in Global Config.");
       }
+    }
+  }, [isConnected, connectors, connect]);
 
-      // CHECK 2: Initialize Provider
-      addLog("1. Initializing Provider...");
-      const provider = new XOConnectProvider({
-        rpcs: { [CHAIN_ID_HEX]: RPC_URL },
-        defaultChainId: CHAIN_ID_HEX,
-      });
+  // 3. Connection Success Listener
+  useEffect(() => {
+    if (isConnected && address) {
+      addLog(`✅ Connected to Chain ID: ${chainId}`);
+      addLog(`📍 Address: ${address}`);
+      toast.success("Connected successfully");
+    }
+  }, [isConnected, address, chainId]);
 
-      const client = createWalletClient({
-        chain: base, // <--- CHANGED: Use Base Mainnet
-        transport: custom(provider as any),
-      });
-      setWalletClient(client);
-      addLog("✅ Provider initialized.");
+  // 4. Manual Connect Handler
+  const handleConnect = () => {
+    addLog("Manual connection requested...");
+    const beexoConnector = connectors.find((c) => c.id === "beexo");
 
-      // CHECK 3: The Handshake
-      addLog("2. Calling requestAddresses (Handshake started)...");
-      addLog("   -> If this hangs >5s, the Wallet is not replying.");
-      addLog(
-        "   -> If it hangs ~10s, the Signature Verification failed silently.",
+    if (beexoConnector) {
+      connect(
+        { connector: beexoConnector },
+        {
+          onSuccess: () => addLog("Handshake successful."),
+          onError: (err) => {
+            addLog(`❌ Connection Failed: ${err.message}`);
+            toast.error(err.message || "Failed to connect");
+          },
+        },
       );
-
-      const addresses = (await Promise.race([
-        client.requestAddresses(),
-        new Promise((_, reject) =>
-          setTimeout(
-            () => reject(new Error("TIMEOUT_MONITOR: Operation took >15s")),
-            15000,
-          ),
-        ),
-      ])) as string[];
-
-      addLog(`3. Handshake returned. Data: ${JSON.stringify(addresses)}`);
-
-      // CHECK 4: Account Validation
-      if (!addresses || addresses.length === 0) {
-        addLog("⚠️ Connected, but NO accounts returned.");
-        addLog(`   -> Wallet might not support Chain ID: ${CHAIN_ID_HEX}`);
-
-        // --- RAW DATA INSPECTION ---
-        addLog("🕵️ INSPECTING RAW WALLET DATA...");
-        try {
-          const rawClient = await XOConnect.getClient();
-
-          if (!rawClient) {
-            addLog("❌ Raw client is null (unexpected).");
-          } else {
-            addLog(`Client Alias: ${rawClient.alias}`);
-            addLog("--- SUPPORTED CURRENCIES ---");
-
-            if (rawClient.currencies && rawClient.currencies.length > 0) {
-              rawClient.currencies.forEach((c: any, i: number) => {
-                addLog(`[${i}] ID: ${c.id}`);
-                addLog(`    ChainID: ${c.chainId} (Type: ${typeof c.chainId})`);
-                addLog(`    Address: ${c.address}`);
-              });
-            } else {
-              addLog("❌ Wallet returned EMPTY currencies array.");
-            }
-          }
-        } catch (debugErr: any) {
-          addLog(`❌ Debug Inspection Failed: ${debugErr.message}`);
-        }
-        // --- END RAW DATA INSPECTION ---
-
-        return;
-      }
-
-      const account = addresses[0];
-      setAddress(account);
-      addLog(`✅ SUCCESS: Connected to ${account}`);
-      toast.success("Connection Successful");
-
-      // Fetch Balance
-      fetchBalance(account);
-    } catch (err: any) {
-      addLog("❌ FATAL ERROR CAUGHT:");
-      addLog(`   Message: ${err.message}`);
-
-      if (err.message.includes("No connection available")) {
-        addLog("   [Analysis]: 'window.XOConnect' was never found.");
-      }
-      if (err.message.includes("Invalid signature")) {
-        addLog("   [Analysis]: Wallet signed data, but verification failed.");
-      }
-      if (err.message.includes("TIMEOUT_MONITOR")) {
-        addLog("   [Analysis]: The handshake exceeded 15s timeout.");
-        addLog("   [Analysis]: Wallet is not responding to postMessage.");
-      }
-
-      toast.error("Connection Failed");
-    } finally {
-      setIsConnecting(false);
-      addLog("--- END SEQUENCE ---");
+    } else {
+      addLog("❌ Beexo Connector not found. Check src/config/index.ts");
     }
   };
 
-  const fetchBalance = async (addr: string) => {
-    try {
-      const res = await fetch(RPC_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          jsonrpc: "2.0",
-          id: 1,
-          method: "eth_getBalance",
-          params: [addr, "latest"],
-        }),
-      });
-      const json = await res.json();
-      if (json.result) {
-        setBalance(formatEther(BigInt(json.result)));
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  // 3. Send Transaction Action
+  // 5. Send Transaction Handler
   const handleSendTransaction = async () => {
-    if (!walletClient || !address) return;
-    setIsSending(true);
-    addLog("Initiating Transaction...");
+    if (!address) return;
+    addLog("Initiating Transaction via Wagmi...");
 
     try {
-      // 0.00001 ETH (Reduced amount for Mainnet Safety)
       const amount = parseEther("0.00001");
-
-      // Recipient
-      const to = "0x3AE66a6DB20fCC27F3DB3DE5Fe74C108A52d6F29";
+      const to = "0x3AE66a6DB20fCC27F3DB3DE5Fe74C108A52d6F29"; // Demo address
 
       addLog(`Sending ${formatEther(amount)} ETH to ${to}...`);
 
-      const hash = await walletClient.sendTransaction({
-        account: address as `0x${string}`,
+      // Wagmi automatically uses the Beexo Provider to sign this
+      const hash = await sendTransactionAsync({
         to,
         value: amount,
       });
 
-      addLog(`Tx Sent! Hash: ${hash}`);
+      addLog(`✅ Tx Sent! Hash: ${hash}`);
       toast.success("Transaction sent!");
-      toast.info("Check console for hash details");
     } catch (err: any) {
       console.error(err);
-      addLog(`Tx Error: ${err.message || err.shortMessage}`);
+      // Wagmi wraps errors, so we look for shortMessage or message
+      addLog(`❌ Tx Error: ${err.shortMessage || err.message}`);
       toast.error("Transaction failed");
-    } finally {
-      setIsSending(false);
     }
   };
 
@@ -228,7 +108,7 @@ export default function BeexoPage() {
           <span className="text-blue-600">Base</span> Integration
         </h1>
         <p className="text-xs font-medium text-gray-400 mt-1">
-          XOConnect + Viem + Base Mainnet (0x2105)
+          Global Wagmi Config + Beexo Connector
         </p>
       </div>
 
@@ -239,7 +119,7 @@ export default function BeexoPage() {
             <Wallet className="w-8 h-8" />
           </div>
 
-          {!address ? (
+          {!isConnected ? (
             <>
               <h2 className="text-lg font-bold text-[#1b1c23]">
                 Connect Beexo Wallet
@@ -269,7 +149,11 @@ export default function BeexoPage() {
                   {address}
                 </span>
                 <span className="text-xs font-bold text-gray-400 mt-2">
-                  Balance: {Number(balance).toFixed(5)} ETH
+                  Balance:{" "}
+                  {balanceData
+                    ? Number(balanceData.formatted).toFixed(5)
+                    : "..."}{" "}
+                  ETH
                 </span>
               </div>
             </>
@@ -277,15 +161,16 @@ export default function BeexoPage() {
         </div>
 
         {/* Action Card */}
-        {address && (
+        {isConnected && (
           <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col gap-4">
             <h3 className="text-base font-bold text-[#1b1c23]">Actions</h3>
 
             <div className="p-4 bg-red-50 rounded-xl border border-red-100 flex gap-3 items-start">
               <AlertTriangle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
               <p className="text-xs text-red-800 leading-relaxed font-medium">
-                <strong>CAUTION:</strong> This is <strong>Base Mainnet</strong>.
-                This action will send <strong>0.00001 ETH</strong> (Real Funds).
+                <strong>CAUTION:</strong> This is <strong>Base Mainnet</strong>{" "}
+                (Chain {chainId}). Sending <strong>0.00001 ETH</strong> real
+                funds.
               </p>
             </div>
 

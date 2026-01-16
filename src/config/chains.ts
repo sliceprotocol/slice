@@ -20,13 +20,13 @@ export const SUPPORTED_CHAINS: ChainConfig[] = [
       usdc: process.env.NEXT_PUBLIC_BASE_USDC_CONTRACT!,
     },
   },
-  // {
-  //   chain: base,
-  //   contracts: {
-  //     slice: process.env.NEXT_PUBLIC_BASE_SLICE_CONTRACT!,
-  //     usdc: process.env.NEXT_PUBLIC_BASE_USDC_CONTRACT!,
-  //   },
-  // },
+  {
+    chain: base,
+    contracts: {
+      slice: process.env.NEXT_PUBLIC_BASE_SLICE_CONTRACT!,
+      usdc: process.env.NEXT_PUBLIC_BASE_USDC_CONTRACT!,
+    },
+  },
 ];
 
 // Select Base Mainnet (8453) for Prod, Base Sepolia (84532) for Dev
