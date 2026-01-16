@@ -54,28 +54,100 @@ export default function BeexoPage() {
 
   // 2. Connect Action
   const handleConnect = async () => {
-    if (!walletClient) return;
     setIsConnecting(true);
+    addLog("--- STARTING DEBUG SEQUENCE ---");
+
     try {
-      addLog("Requesting accounts...");
-
-      // EIP-1193 standard request
-      const [account] = await walletClient.requestAddresses();
-
-      if (account) {
-        setAddress(account);
-        addLog(`Connected: ${account}`);
-        toast.success("Wallet connected successfully");
-
-        // Optional: Fetch Balance (using public RPC directly for simplicity)
-        // In a full app, you'd use a PublicClient here.
-        fetchBalance(account);
+      // CHECK 1: Is the bridge injected?
+      // XOConnect waits 5 seconds for this. We check it instantly.
+      if (
+        typeof window !== "undefined" &&
+        !(window as unknown as Record<string, unknown>)["XOConnect"]
+      ) {
+        addLog("❌ CRITICAL: window.XOConnect is undefined.");
+        addLog("   -> You are likely NOT in the Beexo environment.");
+        addLog("   -> The library will hang for 5s then fail.");
+        // We don't return here to let the library prove us right,
+        // but in production you should return.
+      } else {
+        addLog("✅ window.XOConnect found. Bridge is active.");
       }
+
+      // CHECK 2: Initialize Provider
+      // This is synchronous and should not hang.
+      addLog("1. Initializing Provider...");
+      const provider = new XOConnectProvider({
+        rpcs: { [CHAIN_ID_HEX]: RPC_URL },
+        defaultChainId: CHAIN_ID_HEX,
+      });
+
+      // We recreate the client to ensure we use the new provider instance
+      const client = createWalletClient({
+        chain: baseSepolia,
+        transport: custom(provider as any),
+      });
+      setWalletClient(client);
+      addLog("✅ Provider initialized.");
+
+      // CHECK 3: The Handshake (The likely hang spot)
+      // requestAddresses triggers XOConnect.connect() internally.
+      // This involves: UUID gen -> postMessage -> Wallet Signature -> Verification
+      addLog("2. Calling requestAddresses (Handshake started)...");
+      addLog("   -> If this hangs >5s, the Wallet is not replying.");
+      addLog(
+        "   -> If it hangs ~10s, the Signature Verification failed silently.",
+      );
+
+      // We race the request against a logger to give you visual feedback
+      const addresses = (await Promise.race([
+        client.requestAddresses(),
+        new Promise((_, reject) =>
+          setTimeout(
+            () => reject(new Error("TIMEOUT_MONITOR: Operation took >15s")),
+            15000,
+          ),
+        ),
+      ])) as string[];
+
+      addLog(`3. Handshake returned. Data: ${JSON.stringify(addresses)}`);
+
+      // CHECK 4: Account Validation
+      if (!addresses || addresses.length === 0) {
+        addLog("⚠️ Connected, but NO accounts returned.");
+        addLog(`   -> Wallet might not support Chain ID: ${CHAIN_ID_HEX}`);
+        return;
+      }
+
+      const account = addresses[0];
+      setAddress(account);
+      addLog(`✅ SUCCESS: Connected to ${account}`);
+      toast.success("Connection Successful");
+
+      // Fetch Balance
+      fetchBalance(account);
     } catch (err: any) {
-      addLog(`Connect Failed: ${err.message}`);
-      toast.error("Failed to connect wallet");
+      addLog("❌ FATAL ERROR CAUGHT:");
+      addLog(`   Message: ${err.message}`);
+
+      // Specific error mapping for XOConnect quirks
+      if (err.message.includes("No connection available")) {
+        addLog("   [Analysis]: 'window.XOConnect' was never found.");
+      }
+      if (err.message.includes("Invalid signature")) {
+        addLog("   [Analysis]: Wallet signed data, but verification failed.");
+        addLog(
+          "   [Analysis]: Ensure wallet returns 'ethereum.mainnet.native.eth' ID.",
+        );
+      }
+      if (err.message.includes("TIMEOUT_MONITOR")) {
+        addLog("   [Analysis]: The handshake exceeded 15s timeout.");
+        addLog("   [Analysis]: Wallet is not responding to postMessage.");
+      }
+
+      toast.error("Connection Failed");
     } finally {
       setIsConnecting(false);
+      addLog("--- END SEQUENCE ---");
     }
   };
 
