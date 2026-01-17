@@ -4,15 +4,13 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AmountSelector } from "@/components/category-amount/AmountSelector";
 import { SwipeButton } from "@/components/category-amount/SwipeButton";
-import { AlertCircle, ChevronDown, Target } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import { DisputeOverviewHeader } from "@/components/dispute-overview/DisputeOverviewHeader";
 
 export default function CategoryAmountPage() {
   const router = useRouter();
   // Default to 5 USDC (middle left option)
   const [selectedAmount, setSelectedAmount] = useState<number>(5);
-  const [category, setCategory] = useState("Select a category");
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const handleSwipeComplete = () => {
     // Pass the selected integer amount (e.g., "50") to the assign page.
@@ -25,53 +23,15 @@ export default function CategoryAmountPage() {
       <DisputeOverviewHeader onBack={() => router.back()} />
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col justify-center px-5 pb-8 gap-4 overflow-y-auto">
+      <div className="flex-1 flex flex-col justify-center px-5 py-4 gap-4 overflow-y-auto">
         {/* 2. Main Stake Card */}
         <div className="w-full bg-white rounded-[32px] p-6 shadow-[0px_8px_30px_rgba(0,0,0,0.04)] border border-white flex flex-col items-center justify-center text-center relative overflow-visible">
-          {/* --- Category Selector (Inside the card) --- */}
-          <div className="relative z-20 w-full mb-6">
-            <button
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="w-full bg-[#F5F6F9] hover:bg-[#EEF0F5] transition-colors rounded-full p-2 pr-4 flex items-center justify-between group"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-[#8c8fff]">
-                  <Target className="w-5 h-5" />
-                </div>
-                <span className="font-bold text-sm text-[#1b1c23]">
-                  {category}
-                </span>
-              </div>
-              <ChevronDown
-                className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""}`}
-              />
-            </button>
-
-            {/* Dropdown Menu */}
-            {isDropdownOpen && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-gray-100 p-2 z-50 animate-in fade-in zoom-in-95">
-                {["General", "Tech & Software", "Freelance"].map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => {
-                      setCategory(cat);
-                      setIsDropdownOpen(false);
-                    }}
-                    className="w-full text-left px-4 py-3 rounded-xl hover:bg-[#F5F6F9] text-sm font-bold text-gray-600 hover:text-[#1b1c23] transition-colors"
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
           {/* Ambient Background Glow */}
           <div className="absolute top-20 left-1/2 -translate-x-1/2 w-64 h-64 bg-blue-50/50 rounded-full blur-3xl pointer-events-none -translate-y-1/2" />
 
           <div className="relative z-10 w-full flex flex-col items-center">
             {/* Animation */}
-            <div className="w-[100px] h-[100px] mb-4 relative">
+            <div className="w-[100px] h-[100px] my-4 relative">
               <div className="absolute inset-0 bg-[#8c8fff]/10 rounded-full blur-xl scale-90" />
               <video
                 src="/animations/money.mp4"

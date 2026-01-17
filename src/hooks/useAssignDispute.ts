@@ -5,25 +5,10 @@ import {
   useAccount,
   useChainId,
 } from "wagmi";
-import { erc20Abi, parseUnits } from "viem"; // Added parseUnits
+import { erc20Abi, parseUnits } from "viem";
 import { SLICE_ABI, getContractsForChain } from "@/config/contracts";
 import { toast } from "sonner";
 import { useStakingToken } from "./useStakingToken";
-
-async function processInBatches<T, R>(
-  items: T[],
-  batchSize: number,
-  processor: (item: T) => Promise<R>,
-): Promise<R[]> {
-  const results: R[] = [];
-  for (let i = 0; i < items.length; i += batchSize) {
-    const batch = items.slice(i, i + batchSize);
-    const batchResults = await Promise.all(batch.map(processor));
-    results.push(...batchResults);
-    await new Promise((r) => setTimeout(r, 100));
-  }
-  return results;
-}
 
 export function useAssignDispute() {
   const [isFinding, setIsFinding] = useState(false);
@@ -35,11 +20,9 @@ export function useAssignDispute() {
 
   const { writeContractAsync } = useWriteContract();
   const publicClient = usePublicClient();
-
-  // We need contracts
   const { sliceContract } = getContractsForChain(chainId);
 
-  // 1. MATCHMAKER Logic
+  // 1. MATCHMAKER Logic (Optimized with Multicall)
   const findActiveDispute = useCallback(async (): Promise<number | null> => {
     if (!publicClient || !sliceContract) return null;
     setIsFinding(true);
@@ -58,36 +41,53 @@ export function useAssignDispute() {
         return null;
       }
 
-      // Step 2: Batched Search
-      // IDs are 1 to total.
-      const correctIds = Array.from({ length: totalDisputes }, (_, i) => i + 1);
+      // Step 2: Smart Selection
+      // Instead of checking ALL IDs (1 to 1000), check only the latest 20.
+      // Older disputes are highly likely to be closed.
+      const BATCH_SIZE = 20;
+      const startId = Math.max(1, totalDisputes - BATCH_SIZE + 1);
 
-      const results = await processInBatches(correctIds, 5, async (id) => {
-        try {
-          const d = await publicClient.readContract({
-            address: sliceContract,
-            abi: SLICE_ABI,
-            functionName: "disputes",
-            args: [BigInt(id)],
-          });
-          // d is struct. status is enum (uint8).
-          // Handle both object (struct) and array return types safely
-          const raw = d as any;
-          const status = raw.status ?? raw[9] ?? null; // Index 9 = status in Dispute struct
-          if (status === 1) return id; // Status 1 = Commit Phase (Open)
-        } catch (e) {
-          console.warn(`[Matchmaker] Skipped #${id}`, e);
-        }
-        return null;
+      // Create array of IDs to check: [100, 99, 98, ..., 81]
+      const searchIds = Array.from(
+        { length: totalDisputes - startId + 1 },
+        (_, i) => totalDisputes - i,
+      );
+
+      // Step 3: Multicall (The Fix)
+      // This packs 20 read operations into ONE HTTP request
+      const results = await publicClient.multicall({
+        contracts: searchIds.map((id) => ({
+          address: sliceContract,
+          abi: SLICE_ABI,
+          functionName: "disputes",
+          args: [BigInt(id)],
+        })),
       });
 
-      const availableIds = results.filter((id): id is number => id !== null);
+      // Step 4: Filter Results in Memory
+      const availableIds: number[] = [];
+
+      results.forEach((result, index) => {
+        if (result.status === "success" && result.result) {
+          const disputeData = result.result as any;
+
+          // Access status safely (struct index 9 or property 'status')
+          // Status 1 = Commit Phase (Open for jurors)
+          const status = Number(disputeData.status ?? disputeData[9]);
+
+          if (status === 1) {
+            availableIds.push(searchIds[index]);
+          }
+        }
+      });
 
       if (availableIds.length === 0) {
-        // Fallback if none found?
+        // If nothing found in latest 20, you could theoretically recurse here,
+        // but for a matchmaker, saying "no recent active disputes" is usually acceptable.
         return null;
       }
 
+      // Pick random from the active ones found
       const randomIndex = Math.floor(Math.random() * availableIds.length);
       return availableIds[randomIndex];
     } catch (error) {
@@ -108,6 +108,7 @@ export function useAssignDispute() {
     try {
       setIsJoining(true);
 
+      // Calculate explicit amount based on token decimals
       const amountToStake = parseUnits(amount, decimals);
 
       console.log(`[Join] Staking: ${amount} ${symbol} (${amountToStake})`);
@@ -138,7 +139,7 @@ export function useAssignDispute() {
         address: sliceContract,
         abi: SLICE_ABI,
         functionName: "joinDispute",
-        args: [BigInt(disputeId), amountToStake], // Pass explicit amount
+        args: [BigInt(disputeId), amountToStake],
       });
 
       await publicClient.waitForTransactionReceipt({ hash: joinHash });
@@ -147,7 +148,9 @@ export function useAssignDispute() {
       return true;
     } catch (error: any) {
       console.error("Join failed", error);
-      toast.error(`Join failed: ${error.shortMessage || error.message}`);
+      // Handle "User rejected" vs actual errors
+      const msg = error.shortMessage || error.message || "Unknown error";
+      toast.error(`Join failed: ${msg}`);
       return false;
     } finally {
       setIsJoining(false);

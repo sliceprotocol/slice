@@ -1,7 +1,28 @@
 import React, { useState, useMemo } from "react";
 import { DisputeCard } from "./DisputeCard";
-import { BarChart3, Gavel, Loader2 } from "lucide-react";
-import type { Dispute } from "@/hooks/useDisputeList"; // Or new DisputeUI interface
+import {
+  BarChart3,
+  Gavel,
+  Loader2,
+  Filter,
+  Check,
+  XCircle,
+} from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import type { Dispute } from "@/hooks/useDisputeList";
+
+// Categories matching your Create Dispute options
+const FILTER_CATEGORIES = [
+  { label: "General Court", value: "General" },
+  { label: "Tech & Software", value: "Tech" },
+  { label: "Freelance", value: "Freelance" },
+  { label: "E-Commerce", value: "E-Commerce" },
+];
 
 interface Props {
   disputes: Dispute[];
@@ -15,18 +36,20 @@ export const DisputeListView: React.FC<Props> = ({
   onEarnClick,
 }) => {
   const [activeTab, setActiveTab] = useState<"active" | "history">("active");
-  const [selectedCategory, _setSelectedCategory] = useState<string | null>(
-    null,
-  );
+  // Renamed to enable state updates
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   // Filter Logic
   const filteredDisputes = useMemo(() => {
     return disputes.filter((d) => {
       const matchesTab = activeTab === "active" ? d.status < 3 : d.status === 3;
+
+      // Robust matching: Check if the dispute category includes the selected filter value
       const matchesCategory = selectedCategory
-        ? d.category === selectedCategory
+        ? d.category.toLowerCase().includes(selectedCategory.toLowerCase())
         : true;
+
       return matchesTab && matchesCategory;
     });
   }, [disputes, activeTab, selectedCategory]);
@@ -39,7 +62,12 @@ export const DisputeListView: React.FC<Props> = ({
           <button
             key={tab}
             onClick={() => setActiveTab(tab as any)}
-            className={`pb-3 font-semibold capitalize transition-all ${activeTab === tab ? "text-[#1b1c23] border-b-2 border-[#1b1c23]" : "text-gray-400"}`}
+            className={cn(
+              "pb-3 font-semibold capitalize transition-all",
+              activeTab === tab
+                ? "text-[#1b1c23] border-b-2 border-[#1b1c23]"
+                : "text-gray-400 hover:text-gray-600",
+            )}
           >
             {tab === "active" ? "Active Cases" : "Past History"}
           </button>
@@ -57,14 +85,82 @@ export const DisputeListView: React.FC<Props> = ({
           </h2>
         </div>
 
-        {/* Filter UI (Simplified for brevity) */}
-        <button
-          onClick={() => setIsFilterOpen(!isFilterOpen)}
-          className="flex items-center gap-2 font-extrabold text-[11px]"
-        >
-          Filter {selectedCategory ? `(${selectedCategory})` : ""}
-        </button>
-        {/* Render Dropdown here if isFilterOpen... */}
+        {/* Filter UI */}
+        <Popover open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+          <PopoverTrigger asChild>
+            <button
+              className={cn(
+                "flex items-center gap-2 font-extrabold text-[11px] px-3 py-1.5 rounded-full transition-all border",
+                selectedCategory
+                  ? "bg-[#8c8fff] text-white border-[#8c8fff]"
+                  : "bg-white text-gray-500 border-transparent hover:bg-gray-50",
+              )}
+            >
+              <Filter
+                size={12}
+                className={cn(
+                  selectedCategory ? "text-white" : "text-gray-400",
+                )}
+              />
+              {selectedCategory ? (
+                <span>{selectedCategory}</span>
+              ) : (
+                <span>Filter</span>
+              )}
+            </button>
+          </PopoverTrigger>
+
+          <PopoverContent
+            align="end"
+            className="w-[200px] p-2 rounded-2xl shadow-xl border-gray-100"
+          >
+            <div className="flex flex-col gap-1">
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-2 py-1">
+                Filter by Category
+              </span>
+
+              {FILTER_CATEGORIES.map((cat) => (
+                <button
+                  key={cat.value}
+                  onClick={() => {
+                    // Toggle: if clicking active category, clear it
+                    setSelectedCategory((prev) =>
+                      prev === cat.value ? null : cat.value,
+                    );
+                    setIsFilterOpen(false);
+                  }}
+                  className={cn(
+                    "flex items-center justify-between w-full px-3 py-2.5 rounded-xl text-xs font-bold transition-colors text-left",
+                    selectedCategory === cat.value
+                      ? "bg-[#F5F6F9] text-[#1b1c23]"
+                      : "text-gray-500 hover:bg-gray-50 hover:text-[#1b1c23]",
+                  )}
+                >
+                  {cat.label}
+                  {selectedCategory === cat.value && (
+                    <Check size={14} className="text-[#8c8fff]" />
+                  )}
+                </button>
+              ))}
+
+              {selectedCategory && (
+                <>
+                  <div className="h-px bg-gray-100 my-1" />
+                  <button
+                    onClick={() => {
+                      setSelectedCategory(null);
+                      setIsFilterOpen(false);
+                    }}
+                    className="flex items-center gap-2 w-full px-3 py-2.5 rounded-xl text-xs font-bold text-red-500 hover:bg-red-50 transition-colors text-left"
+                  >
+                    <XCircle size={14} />
+                    Clear Filter
+                  </button>
+                </>
+              )}
+            </div>
+          </PopoverContent>
+        </Popover>
       </div>
 
       {/* List Content */}
@@ -74,9 +170,23 @@ export const DisputeListView: React.FC<Props> = ({
             <Loader2 className="animate-spin text-[#8c8fff]" />
           </div>
         ) : filteredDisputes.length === 0 ? (
-          <div className="text-center py-12">
-            <Gavel className="w-9 h-9 mx-auto text-gray-300 mb-2" />
-            <p className="text-gray-400 font-bold">No cases found</p>
+          <div className="text-center py-12 flex flex-col items-center">
+            <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+              <Gavel className="w-8 h-8 text-gray-300" />
+            </div>
+            <p className="text-gray-400 font-bold">
+              {selectedCategory
+                ? `No ${selectedCategory} cases found`
+                : "No cases found"}
+            </p>
+            {selectedCategory && (
+              <button
+                onClick={() => setSelectedCategory(null)}
+                className="mt-2 text-xs font-bold text-[#8c8fff] hover:underline"
+              >
+                Clear filters
+              </button>
+            )}
           </div>
         ) : (
           filteredDisputes.map((d) => <DisputeCard key={d.id} dispute={d} />)
@@ -85,7 +195,7 @@ export const DisputeListView: React.FC<Props> = ({
 
       <button
         onClick={onEarnClick}
-        className="fixed bottom-[90px] left-1/2 -translate-x-1/2 z-40 w-[241px] h-10 bg-white border-2 border-[#8c8fff] rounded-[14px] font-bold"
+        className="fixed bottom-[90px] left-1/2 -translate-x-1/2 z-40 w-[241px] h-10 bg-white border-2 border-[#8c8fff] rounded-[14px] font-bold shadow-lg hover:scale-105 active:scale-95 transition-all text-[#1b1c23]"
       >
         Start Voting
       </button>

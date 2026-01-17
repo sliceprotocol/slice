@@ -49,7 +49,9 @@ export const MinimalDebugger = () => {
           addLog("⚠️ Wrong Chain. Switching...");
           await walletClient.switchChain({ id: 8453 });
         }
-      } catch (_e) {}
+      } catch (_e) {
+        // Ignore chain switch error if it fails or is already pending
+      }
 
       // 2. Add 'from' address
       const fullPayload = {

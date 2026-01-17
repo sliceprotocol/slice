@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useAccount } from "wagmi";
 import { User, Coins } from "lucide-react";
@@ -19,24 +19,15 @@ export default function PayDisputePage() {
   const { dispute, refetch } = useGetDispute(disputeId);
   const { address } = useAccount();
 
-  // State to hold the formatted USDC value
-  const [stakeAmountDisplay, setStakeAmountDisplay] =
-    useState<string>("Loading...");
+  // Derive stakeAmountDisplay directly from dispute
+  const stakeAmountDisplay = dispute?.stake || "Loading...";
 
   useEffect(() => {
-    if (dispute) {
-      // 1. Check Status: If status > 0 (Created), payment is already done
-      if (dispute.status > 0) {
-        router.replace("/profile");
-        return;
-      }
-
-      // 2. Format the required stake from units (6 decimals) to USDC (String)
-      if (dispute.stake) {
-        setStakeAmountDisplay(dispute.stake);
-      }
+    if (dispute && dispute.status > 0) {
+      // Check Status: If status > 0 (Created), payment is already done
+      router.replace("/profile");
     }
-  }, [dispute, disputeId, router]);
+  }, [dispute, router]);
 
   const handleBack = () => {
     router.back();

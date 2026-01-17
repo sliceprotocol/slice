@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useMemo } from "react";
 import Image from "next/image";
 import { ChevronRight, Search } from "lucide-react";
 import { useAddressBook } from "@/hooks/useAddressBook";
@@ -9,14 +9,28 @@ import { Input } from "@/components/ui/input";
 
 export const ContactsView = () => {
   const { contacts } = useAddressBook();
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredContacts = useMemo(() => {
+    const term = searchTerm.toLowerCase();
+    return contacts.filter(
+      (c) =>
+        c.name.toLowerCase().includes(term) ||
+        c.address.toLowerCase().includes(term),
+    );
+  }, [contacts, searchTerm]);
 
   return (
-    <div className="flex flex-col gap-5 min-h-[50vh] pb-20">
+    // REMOVED: min-h-[50vh]
+    // KEPT: pb-20 to ensure the floating button doesn't cover the last item
+    <div className="flex flex-col gap-5 pb-20">
       {/* Search Bar */}
       <div className="relative">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 z-10" />
         <Input
           placeholder="Search contacts..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
           className="w-full bg-white border-gray-200 rounded-2xl py-6 pl-11 pr-4 text-sm font-bold focus-visible:ring-[#8c8fff] focus-visible:border-[#8c8fff] transition-colors shadow-sm"
         />
       </div>
@@ -26,15 +40,16 @@ export const ContactsView = () => {
           Saved Identities
         </h3>
         <span className="text-xs font-bold text-gray-400 bg-gray-100 px-2 py-1 rounded-md">
-          {contacts.length}
+          {filteredContacts.length}
         </span>
       </div>
 
       {/* Contacts List */}
-      <div className="bg-white rounded-3xl p-2 border border-gray-100 shadow-sm flex-1">
-        {contacts.length > 0 ? (
+      {/* REMOVED: flex-1 (so it doesn't force expansion) */}
+      <div className="bg-white rounded-3xl p-2 border border-gray-100 shadow-sm">
+        {filteredContacts.length > 0 ? (
           <div className="flex flex-col">
-            {contacts.map((c) => (
+            {filteredContacts.map((c) => (
               <div
                 key={c.address}
                 className="flex items-center gap-3 p-3 border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors rounded-xl cursor-pointer group"
@@ -78,9 +93,13 @@ export const ContactsView = () => {
                 className="opacity-50"
               />
             </div>
-            <p className="text-sm font-bold text-gray-400">No contacts yet</p>
+            <p className="text-sm font-bold text-gray-400">
+              {searchTerm ? "No matches found" : "No contacts yet"}
+            </p>
             <p className="text-xs text-gray-300 mt-1 max-w-50">
-              Add friends to quickly select them in future disputes.
+              {searchTerm
+                ? "Try searching for a different name or address."
+                : "Add friends to quickly select them in future disputes."}
             </p>
           </div>
         )}

@@ -16,7 +16,11 @@ import { useStakingToken } from "./useStakingToken";
 export function useWithdraw() {
   const { address } = useAccount();
   const { sliceContract: SLICE_ADDRESS } = useContracts();
-  const { address: stakingToken, decimals, symbol } = useStakingToken();
+  const {
+    address: stakingToken,
+    decimals,
+    symbol: _symbol,
+  } = useStakingToken();
   const { writeContractAsync } = useWriteContract();
   const publicClient = usePublicClient();
   const [isWithdrawing, setIsWithdrawing] = useState(false);

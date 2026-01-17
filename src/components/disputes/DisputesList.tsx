@@ -4,15 +4,12 @@ import { useRouter } from "next/navigation";
 import { DisputeListView } from "./DisputeListView";
 import { useAccount } from "wagmi";
 import ConnectButton from "../ConnectButton";
-import { useAllDisputes } from "@/hooks/useAllDisputes";
+import { useDisputeList } from "@/hooks/useDisputeList";
 
 export const DisputesList: React.FC = () => {
   const router = useRouter();
   const { isConnected } = useAccount();
-
-  // Use "juror" to strictly get disputes where I am a juror.
-  // Use activeOnly: true to hide finished disputes.
-  const { disputes, isLoading } = useAllDisputes();
+  const { disputes, isLoading } = useDisputeList("juror");
 
   if (!isConnected) {
     return (

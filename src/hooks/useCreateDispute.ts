@@ -22,6 +22,7 @@ export function useCreateDispute() {
       evidence?: string[];
     },
     jurorsRequired: number = 3,
+    deadlineHours: number = 96,
   ): Promise<boolean> => {
     try {
       setIsCreating(true);
@@ -46,8 +47,26 @@ export function useCreateDispute() {
       console.log("IPFS Hash created:", ipfsHash);
       toast.info("Creating dispute on-chain...");
 
-      // 2. Send Transaction using new Struct format
-      const time = BigInt(60 * 60 * 24); // 24 hours per phase
+      // 2. Calculate Phase Durations based on Deadline
+      // Total duration in seconds (from hours input)
+      const totalSeconds = deadlineHours * 60 * 60;
+
+      // Strategy: Split total time into phases
+      // Payment: 10% (Minimum 1 hour to allow reaction)
+      // Evidence: 40% (Longest period for gathering info)
+      // Commit: 25%
+      // Reveal: 25%
+      const payTime = Math.max(3600, Math.floor(totalSeconds * 0.1));
+      const remainingTime = totalSeconds - payTime;
+
+      const evidenceTime = Math.floor(remainingTime * 0.45); // ~40% of total
+      const commitTime = Math.floor(remainingTime * 0.275); // ~25% of total
+      const revealTime = Math.floor(remainingTime * 0.275); // ~25% of total
+
+      const paySeconds = BigInt(payTime);
+      const evidenceSeconds = BigInt(evidenceTime);
+      const commitSeconds = BigInt(commitTime);
+      const revealSeconds = BigInt(revealTime);
 
       const hash = await writeContractAsync({
         address: sliceContract,
@@ -55,15 +74,15 @@ export function useCreateDispute() {
         functionName: "createDispute",
         args: [
           {
-            claimer: finalClaimer as `0x${string}`, // NEW FIELD
+            claimer: finalClaimer as `0x${string}`,
             defender: defenderAddress as `0x${string}`,
             category: category,
             ipfsHash: ipfsHash,
             jurorsRequired: BigInt(jurorsRequired),
-            paySeconds: time,
-            evidenceSeconds: time, // NEW FIELD
-            commitSeconds: time,
-            revealSeconds: time,
+            paySeconds: paySeconds,
+            evidenceSeconds: evidenceSeconds,
+            commitSeconds: commitSeconds,
+            revealSeconds: revealSeconds,
           },
         ],
       });
