@@ -98,7 +98,7 @@ export const BalanceCard: React.FC = () => {
         </div>
 
         {/* Action Buttons (Right Side) */}
-        <div className="flex gap-4 items-center shrink-0 self-end">
+        <div className="flex gap-3 items-center shrink-0 self-end">
           <button className={actionBtnClass} onClick={handleDeposit}>
             <ArrowDownCircle className={iconClass} />
             <span className="font-manrope font-semibold text-xs tracking-[-0.12px] leading-none">
