@@ -7,14 +7,20 @@ import {
   useReadContract,
   useAccount,
 } from "wagmi";
-import { SLICE_ABI, SLICE_ADDRESS } from "@/config/contracts";
+import { SLICE_ABI } from "@/config/contracts";
+import { useContracts } from "./useContracts";
 import { toast } from "sonner";
 import { formatUnits } from "viem";
 import { useStakingToken } from "./useStakingToken";
 
 export function useWithdraw() {
   const { address } = useAccount();
-  const { address: stakingToken, decimals, symbol } = useStakingToken();
+  const { sliceContract: SLICE_ADDRESS } = useContracts();
+  const {
+    address: stakingToken,
+    decimals,
+    symbol: _symbol,
+  } = useStakingToken();
   const { writeContractAsync } = useWriteContract();
   const publicClient = usePublicClient();
   const [isWithdrawing, setIsWithdrawing] = useState(false);

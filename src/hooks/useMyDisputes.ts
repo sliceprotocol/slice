@@ -1,5 +1,6 @@
 import { useReadContract, useReadContracts, useAccount } from "wagmi";
-import { SLICE_ABI, SLICE_ADDRESS } from "@/config/contracts";
+import { SLICE_ABI } from "@/config/contracts";
+import { useContracts } from "@/hooks/useContracts";
 import { transformDisputeData, type DisputeUI } from "@/util/disputeAdapter";
 import { useMemo, useState, useEffect } from "react";
 import { useStakingToken } from "./useStakingToken";
@@ -7,12 +8,13 @@ import { useStakingToken } from "./useStakingToken";
 export function useMyDisputes() {
   const { address } = useAccount();
   const { decimals } = useStakingToken();
+  const { sliceContract } = useContracts();
 
   // 1. Fetch IDs
   // We rely on the smart contract fix (userDisputes[_config.claimer])
   // so these standard calls will now work correctly.
   const { data: jurorIds, isLoading: loadJuror } = useReadContract({
-    address: SLICE_ADDRESS,
+    address: sliceContract,
     abi: SLICE_ABI,
     functionName: "getJurorDisputes",
     args: address ? [address] : undefined,
@@ -20,7 +22,7 @@ export function useMyDisputes() {
   });
 
   const { data: userIds, isLoading: loadUser } = useReadContract({
-    address: SLICE_ADDRESS,
+    address: sliceContract,
     abi: SLICE_ABI,
     functionName: "getUserDisputes",
     args: address ? [address] : undefined,
@@ -42,12 +44,12 @@ export function useMyDisputes() {
   // 3. Prepare Multicall
   const calls = useMemo(() => {
     return sortedIds.map((id) => ({
-      address: SLICE_ADDRESS,
+      address: sliceContract,
       abi: SLICE_ABI,
       functionName: "disputes",
       args: [id],
     }));
-  }, [sortedIds]);
+  }, [sortedIds, sliceContract]);
 
   const { data: results, isLoading: loadMulti } = useReadContracts({
     contracts: calls,

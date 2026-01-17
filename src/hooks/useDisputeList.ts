@@ -1,5 +1,6 @@
 import { useReadContract, useReadContracts } from "wagmi";
-import { SLICE_ABI, SLICE_ADDRESS } from "@/config/contracts";
+import { SLICE_ABI } from "@/config/contracts";
+import { useContracts } from "@/hooks/useContracts";
 import { transformDisputeData, type DisputeUI } from "@/util/disputeAdapter";
 import { useMemo, useState, useEffect } from "react";
 import { useAccount } from "wagmi";
@@ -18,10 +19,11 @@ export function useDisputeList(
 ) {
   const { address } = useAccount();
   const { decimals } = useStakingToken();
+  const { sliceContract } = useContracts();
 
   // 1. Fetch Juror Disputes
   const { data: jurorDisputeIds } = useReadContract({
-    address: SLICE_ADDRESS,
+    address: sliceContract,
     abi: SLICE_ABI,
     functionName: "getJurorDisputes",
     args: address ? [address] : undefined,
@@ -32,7 +34,7 @@ export function useDisputeList(
 
   // 2. Fetch User Disputes (Only for "mine")
   const { data: userDisputeIds } = useReadContract({
-    address: SLICE_ADDRESS,
+    address: sliceContract,
     abi: SLICE_ABI,
     functionName: "getUserDisputes",
     args: address ? [address] : undefined,
@@ -42,7 +44,7 @@ export function useDisputeList(
   });
 
   const { data: totalCount } = useReadContract({
-    address: SLICE_ADDRESS,
+    address: sliceContract,
     abi: SLICE_ABI,
     functionName: "disputeCount",
     query: { enabled: listType === "all" },
@@ -57,7 +59,7 @@ export function useDisputeList(
       const ids = Array.from(jurorDisputeIds as bigint[]);
       for (const id of ids) {
         contracts.push({
-          address: SLICE_ADDRESS,
+          address: sliceContract,
           abi: SLICE_ABI,
           functionName: "disputes",
           args: [id],
@@ -71,7 +73,7 @@ export function useDisputeList(
 
       for (let i = start; i >= end; i--) {
         contracts.push({
-          address: SLICE_ADDRESS,
+          address: sliceContract,
           abi: SLICE_ABI,
           functionName: "disputes",
           args: [BigInt(i)],
@@ -96,7 +98,7 @@ export function useDisputeList(
 
     for (const id of idsToFetch) {
       contracts.push({
-        address: SLICE_ADDRESS,
+        address: sliceContract,
         abi: SLICE_ABI,
         functionName: "disputes",
         args: [id],
@@ -104,7 +106,7 @@ export function useDisputeList(
     }
 
     return contracts;
-  }, [listType, jurorDisputeIds, userDisputeIds, totalCount]);
+  }, [listType, jurorDisputeIds, userDisputeIds, totalCount, sliceContract]);
 
   // 4. Fetch Data
   const {

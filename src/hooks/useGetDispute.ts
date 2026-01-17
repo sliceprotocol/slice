@@ -1,11 +1,13 @@
 import { useReadContract } from "wagmi";
-import { SLICE_ABI, SLICE_ADDRESS } from "@/config/contracts";
+import { SLICE_ABI } from "@/config/contracts";
 import { transformDisputeData, type DisputeUI } from "@/util/disputeAdapter";
 import { useState, useEffect } from "react";
 import { useStakingToken } from "./useStakingToken";
+import { useContracts } from "./useContracts";
 
 export function useGetDispute(id: string) {
   const { decimals } = useStakingToken();
+  const { sliceContract } = useContracts();
   // 1. Fetch raw dispute data from the contract
   const {
     data: rawDispute,
@@ -13,7 +15,7 @@ export function useGetDispute(id: string) {
     error,
     refetch,
   } = useReadContract({
-    address: SLICE_ADDRESS,
+    address: sliceContract,
     abi: SLICE_ABI,
     functionName: "disputes", // Matches your Solidity mapping
     args: [BigInt(id)],

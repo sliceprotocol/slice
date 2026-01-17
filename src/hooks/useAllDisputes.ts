@@ -1,14 +1,16 @@
 import { useReadContract, useReadContracts } from "wagmi";
-import { SLICE_ABI, SLICE_ADDRESS } from "@/config/contracts";
+import { SLICE_ABI } from "@/config/contracts";
+import { useContracts } from "@/hooks/useContracts";
 import { transformDisputeData, type DisputeUI } from "@/util/disputeAdapter";
 import { useMemo, useState, useEffect } from "react";
 import { useStakingToken } from "./useStakingToken";
 
 export function useAllDisputes() {
   const { decimals } = useStakingToken();
+  const { sliceContract } = useContracts();
   // 1. Get the total number of disputes
   const { data: countData } = useReadContract({
-    address: SLICE_ADDRESS,
+    address: sliceContract,
     abi: SLICE_ABI,
     functionName: "disputeCount",
   });
@@ -27,14 +29,14 @@ export function useAllDisputes() {
 
     for (let i = start; i >= end; i--) {
       contracts.push({
-        address: SLICE_ADDRESS,
+        address: sliceContract,
         abi: SLICE_ABI,
         functionName: "disputes",
         args: [BigInt(i)],
       });
     }
     return contracts;
-  }, [countData]);
+  }, [countData, sliceContract]);
 
   // 3. Fetch data for those IDs
   const {

@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useWriteContract, usePublicClient, useAccount } from "wagmi";
-import { SLICE_ABI, SLICE_ADDRESS } from "@/config/contracts";
+import { SLICE_ABI } from "@/config/contracts";
+import { useContracts } from "@/hooks/useContracts";
 import { uploadJSONToIPFS } from "@/util/ipfs";
 import { toast } from "sonner";
 
 export function useCreateDispute() {
   const { address } = useAccount();
+  const { sliceContract } = useContracts();
   const { writeContractAsync } = useWriteContract();
   const publicClient = usePublicClient();
   const [isCreating, setIsCreating] = useState(false);
@@ -20,6 +22,7 @@ export function useCreateDispute() {
       evidence?: string[];
     },
     jurorsRequired: number = 3,
+    deadlineHours: number = 96,
   ): Promise<boolean> => {
     try {
       setIsCreating(true);
@@ -44,24 +47,42 @@ export function useCreateDispute() {
       console.log("IPFS Hash created:", ipfsHash);
       toast.info("Creating dispute on-chain...");
 
-      // 2. Send Transaction using new Struct format
-      const time = BigInt(60 * 60 * 24); // 24 hours per phase
+      // 2. Calculate Phase Durations based on Deadline
+      // Total duration in seconds (from hours input)
+      const totalSeconds = deadlineHours * 60 * 60;
+
+      // Strategy: Split total time into phases
+      // Payment: 10% (Minimum 1 hour to allow reaction)
+      // Evidence: 40% (Longest period for gathering info)
+      // Commit: 25%
+      // Reveal: 25%
+      const payTime = Math.max(3600, Math.floor(totalSeconds * 0.1));
+      const remainingTime = totalSeconds - payTime;
+
+      const evidenceTime = Math.floor(remainingTime * 0.45); // ~40% of total
+      const commitTime = Math.floor(remainingTime * 0.275); // ~25% of total
+      const revealTime = Math.floor(remainingTime * 0.275); // ~25% of total
+
+      const paySeconds = BigInt(payTime);
+      const evidenceSeconds = BigInt(evidenceTime);
+      const commitSeconds = BigInt(commitTime);
+      const revealSeconds = BigInt(revealTime);
 
       const hash = await writeContractAsync({
-        address: SLICE_ADDRESS,
+        address: sliceContract,
         abi: SLICE_ABI,
         functionName: "createDispute",
         args: [
           {
-            claimer: finalClaimer as `0x${string}`, // NEW FIELD
+            claimer: finalClaimer as `0x${string}`,
             defender: defenderAddress as `0x${string}`,
             category: category,
             ipfsHash: ipfsHash,
             jurorsRequired: BigInt(jurorsRequired),
-            paySeconds: time,
-            evidenceSeconds: time, // NEW FIELD
-            commitSeconds: time,
-            revealSeconds: time,
+            paySeconds: paySeconds,
+            evidenceSeconds: evidenceSeconds,
+            commitSeconds: commitSeconds,
+            revealSeconds: revealSeconds,
           },
         ],
       });
@@ -77,7 +98,8 @@ export function useCreateDispute() {
       return true;
     } catch (error: any) {
       console.error("Create dispute failed", error);
-      const msg = error.reason || error.shortMessage || error.message || "Unknown error";
+      const msg =
+        error.reason || error.shortMessage || error.message || "Unknown error";
       toast.error(`Create Failed: ${msg}`);
       return false;
     } finally {

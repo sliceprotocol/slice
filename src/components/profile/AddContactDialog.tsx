@@ -48,7 +48,7 @@ export function AddContactDialog({
             className="w-full h-auto py-4 flex items-center justify-center gap-3 rounded-2xl bg-[#1b1c23] text-white hover:bg-gray-800 border-none shadow-lg transition-all group"
           >
             <UserPlus className="w-5 h-5" />
-            <span className="text-sm font-bold">Add New Contact</span>
+            <span className="font-semibold">Add New Contact</span>
           </Button>
         ) : (
           <Button

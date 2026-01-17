@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { useAccount } from "wagmi";
-import { SLICE_ADDRESS } from "@/config/contracts";
+import { useContracts } from "@/hooks/useContracts";
 import { useSliceVoting } from "@/hooks/useSliceVoting";
 import { useGetDispute } from "@/hooks/useGetDispute";
 import { getVoteData } from "@/util/votingStorage";
 
 export function useReveal(disputeId: string) {
   const { address } = useAccount();
+  const { sliceContract } = useContracts();
 
   const { revealVote, isProcessing, logs } = useSliceVoting();
   const { dispute } = useGetDispute(disputeId);
@@ -22,8 +23,8 @@ export function useReveal(disputeId: string) {
   };
 
   useEffect(() => {
-    if (address) {
-      const stored = getVoteData(SLICE_ADDRESS, disputeId, address);
+    if (address && sliceContract) {
+      const stored = getVoteData(sliceContract, disputeId, address);
       if (stored) {
         setLocalVote(stored.vote);
         setHasLocalData(true);
@@ -31,7 +32,7 @@ export function useReveal(disputeId: string) {
         setHasLocalData(false);
       }
     }
-  }, [address, disputeId]);
+  }, [address, disputeId, sliceContract]);
 
   return {
     dispute,

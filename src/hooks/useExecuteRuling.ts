@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { useWriteContract, usePublicClient } from "wagmi";
-import { SLICE_ABI, SLICE_ADDRESS } from "@/config/contracts";
+import { SLICE_ABI } from "@/config/contracts";
+import { useContracts } from "@/hooks/useContracts";
 import { toast } from "sonner";
 
 export function useExecuteRuling() {
+  const { sliceContract } = useContracts();
   const { writeContractAsync } = useWriteContract();
   const publicClient = usePublicClient();
   const [isExecuting, setIsExecuting] = useState(false);
@@ -14,7 +16,7 @@ export function useExecuteRuling() {
       console.log(`Executing ruling for dispute #${disputeId}...`);
 
       const hash = await writeContractAsync({
-        address: SLICE_ADDRESS,
+        address: sliceContract,
         abi: SLICE_ABI,
         functionName: "executeRuling",
         args: [BigInt(disputeId)],

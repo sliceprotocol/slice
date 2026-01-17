@@ -4,20 +4,40 @@ import {
   CheckCircle2,
   XCircle,
   ArrowRight,
-  Gavel,
-  Lock,
-  Archive,
   Tag,
   Users,
   Coins,
+  Clock,
+  Monitor,
+  Briefcase,
+  ShoppingBag,
+  Scale,
+  Gavel,
+  Lock,
+  Archive,
 } from "lucide-react";
 import type { Dispute } from "@/hooks/useDisputeList";
+import { cn } from "@/lib/utils";
 
-const getIconByCategory = (category: string) => {
+// Helper to get Lucide icon component based on category string
+const CategoryIcon = ({
+  category,
+  className,
+}: {
+  category: string;
+  className?: string;
+}) => {
   const cat = (category || "").toLowerCase();
-  if (cat.includes("tech")) return "/images/icons/bar-chart-icon.svg";
-  if (cat.includes("freelance")) return "/images/icons/person-icon.svg";
-  return "/images/icons/stellar-fund-icon.svg";
+
+  if (cat.includes("tech") || cat.includes("software"))
+    return <Monitor className={className} />;
+  if (cat.includes("freelance") || cat.includes("service"))
+    return <Briefcase className={className} />;
+  if (cat.includes("commerce") || cat.includes("shop"))
+    return <ShoppingBag className={className} />;
+
+  // Default / General
+  return <Scale className={className} />;
 };
 
 type DisputeUI = Dispute & {
@@ -43,152 +63,135 @@ export const DisputeCard = ({ dispute }: { dispute: DisputeUI }) => {
     router.push(`/execute-ruling/${dispute.id}`);
   };
 
-  // Status mapping from Contract/Adapter
-  // 0: Created, 1: Commit (Voting), 2: Reveal, 3: Finished
-  const isVoting = dispute.status === 1;
+  // Status mapping
   const isReveal = dispute.status === 2;
   const isFinished = dispute.status === 3;
-
-  // Check if "Execute Ruling" button should appear (Status 2 + time passed, handled by hook usually, but simplified here)
   const isReadyForWithdrawal =
     dispute.status === 2 && dispute.phase === "WITHDRAW";
 
-  // Find user's vote if available
   const myVote = dispute.voters?.find((v) => v.isMe)?.vote;
 
   return (
     <div
       onClick={handleReadDispute}
-      className="bg-white rounded-[24px] p-5 shadow-[0_2px_8px_rgba(0,0,0,0.1)] border border-gray-100 relative flex flex-col gap-5 hover:shadow-lg transition-all duration-300 cursor-pointer group"
+      className="group relative bg-white rounded-[24px] p-5 border border-gray-200 shadow-md transition-all duration-300 hover:shadow-xl hover:border-[#8c8fff]/40 cursor-pointer overflow-hidden active:scale-[0.99]"
     >
-      {/* 1. Header Section */}
-      <div className="flex items-start gap-4">
-        <div className="w-[52px] h-[52px] shrink-0 rounded-2xl bg-[#8c8fff]/10 border border-[#8c8fff]/20 flex items-center justify-center overflow-hidden">
-          {dispute.icon ? (
-            <img
-              src={dispute.icon}
-              alt={dispute.title}
-              className="w-full h-full object-cover"
+      {/* Hover Gradient Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#8c8fff]/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+
+      <div className="relative z-10 flex flex-col gap-4">
+        {/* --- Top Row: Category & Stake --- */}
+        <div className="flex justify-between items-start">
+          {/* Category Badge */}
+          <div className="flex items-center gap-1.5 bg-[#F8F9FC] border border-gray-200 rounded-full px-2.5 py-1.5 group-hover:bg-white group-hover:shadow-sm transition-all">
+            <CategoryIcon
+              category={dispute.category}
+              className="w-3.5 h-3.5 text-[#8c8fff]"
             />
-          ) : (
-            <img
-              src={getIconByCategory(dispute.category)}
-              alt={dispute.category}
-              className="w-6 h-6 object-contain opacity-80"
-            />
-          )}
+            <span className="text-[10px] font-extrabold text-gray-600 uppercase tracking-wide">
+              {dispute.category}
+            </span>
+          </div>
+
+          {/* Stake Display */}
+          <div className="flex flex-col items-end">
+            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">
+              Prize Pool
+            </span>
+            <div className="flex items-center gap-1.5 text-[#1b1c23]">
+              <Coins className="w-3.5 h-3.5 text-[#8c8fff]" />
+              <span className="font-manrope font-black text-base">
+                {dispute.stake}{" "}
+                <span className="text-xs font-bold text-gray-400">USDC</span>
+              </span>
+            </div>
+          </div>
         </div>
 
-        <div className="flex-1 min-w-0 flex flex-col gap-2">
-          <h3 className="font-manrope font-extrabold text-[15px] text-[#1b1c23] leading-tight truncate pr-2 group-hover:text-[#8c8fff] transition-colors">
+        {/* --- Middle: Title & Votes --- */}
+        <div>
+          <h3 className="font-manrope font-extrabold text-base text-[#1b1c23] leading-snug mb-2.5 group-hover:text-[#8c8fff] transition-colors line-clamp-2">
             {dispute.title}
           </h3>
 
-          <div className="flex items-center gap-2 flex-wrap">
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#F5F6F9] border border-gray-100">
-              <Tag size={10} className="text-[#8c8fff]" />
-              <span className="font-manrope font-bold text-[10px] text-[#1b1c23] uppercase tracking-wide">
-                {dispute.category}
-              </span>
+          {!isFinished && (
+            <div className="flex items-center gap-3 text-[11px] font-bold text-gray-400">
+              <div className="flex items-center gap-1">
+                <Users className="w-3 h-3" />
+                <span>
+                  {dispute.votesCount || 0}/{dispute.jurorsRequired} Jurors
+                </span>
+              </div>
+              {dispute.deadlineLabel && (
+                <div className="flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  <span className={dispute.isUrgent ? "text-rose-500" : ""}>
+                    {dispute.deadlineLabel}
+                  </span>
+                </div>
+              )}
             </div>
-            {/* Show Vote Count only if active */}
-            {!isFinished && (
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#F5F6F9] border border-gray-100">
-                <Users size={10} className="text-[#8c8fff]" />
-                <span className="font-manrope font-bold text-[10px] text-[#1b1c23] tracking-wide">
-                  {dispute.votesCount || 0}/{dispute.jurorsRequired} jurors
+          )}
+        </div>
+
+        {/* --- Separator --- */}
+        <div className="h-px w-full bg-gray-100 group-hover:bg-[#8c8fff]/10 transition-colors" />
+
+        {/* --- Footer: Status & Action --- */}
+        <div className="flex items-center justify-between">
+          {/* Status Indicator */}
+          <div className="flex items-center gap-2">
+            {myVote !== undefined ? (
+              // User has voted
+              <div className="flex items-center gap-1.5">
+                {myVote === VOTE_APPROVE ? (
+                  <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
+                ) : (
+                  <XCircle className="w-3.5 h-3.5 text-red-500" />
+                )}
+                <span className="text-[11px] font-bold text-gray-500">
+                  You voted {myVote === VOTE_APPROVE ? "Claimant" : "Defendant"}
+                </span>
+              </div>
+            ) : (
+              // User hasn't voted / Status View
+              <div className="flex items-center gap-1.5">
+                <div
+                  className={cn(
+                    "w-1.5 h-1.5 rounded-full",
+                    isFinished
+                      ? "bg-green-500"
+                      : isReveal
+                        ? "bg-orange-400"
+                        : "bg-[#8c8fff]",
+                  )}
+                />
+                <span className="text-[11px] font-bold text-gray-500">
+                  {isFinished
+                    ? "Resolved"
+                    : isReveal
+                      ? "Reveal Phase"
+                      : "Voting Open"}
                 </span>
               </div>
             )}
           </div>
-        </div>
-      </div>
 
-      {/* 2. Status / Context Area */}
-      <div className="bg-[#F8F9FC] rounded-xl p-4 flex items-center gap-3 border border-gray-50">
-        {/* CASE A: User Voted */}
-        {myVote !== undefined ? (
-          <>
-            <div
-              className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                myVote === VOTE_APPROVE
-                  ? "bg-green-100 text-green-600"
-                  : "bg-red-100 text-red-600"
-              }`}
+          {/* Action Button */}
+          {isReadyForWithdrawal ? (
+            <button
+              onClick={handleWithdraw}
+              className="flex items-center gap-1.5 bg-[#1b1c23] text-white px-3 py-1.5 rounded-lg font-manrope font-bold text-[10px] shadow-md shadow-gray-300 hover:bg-[#2c2d33] transition-all active:scale-95 uppercase tracking-wide"
             >
-              {myVote === VOTE_APPROVE ? (
-                <CheckCircle2 size={16} />
-              ) : (
-                <XCircle size={16} />
-              )}
+              <Wallet className="w-3 h-3" />
+              <span>Withdraw</span>
+            </button>
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-[#F5F6F9] text-[#1b1c23] flex items-center justify-center group-hover:bg-[#1b1c23] group-hover:text-white transition-all duration-300 border border-gray-100">
+              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
             </div>
-            <div>
-              <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                Your vote was:
-              </span>
-              <span className="text-sm font-bold text-[#1b1c23]">
-                {myVote === VOTE_APPROVE
-                  ? "Party A (Claimant)"
-                  : "Party B (Defendant)"}
-              </span>
-            </div>
-          </>
-        ) : (
-          /* CASE B: User Didn't Vote (Check Status!) */
-          <>
-            <div className="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center shrink-0 text-gray-400">
-              {isFinished ? (
-                <Archive size={16} />
-              ) : isReveal ? (
-                <Lock size={16} />
-              ) : (
-                <Gavel size={16} />
-              )}
-            </div>
-            <div>
-              <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                Status
-              </span>
-              <span className="text-xs font-bold text-[#1b1c23]">
-                {isFinished
-                  ? "Case Resolved"
-                  : isReveal
-                    ? "Reveal Phase In Progress"
-                    : isVoting
-                      ? "Voting In Progress"
-                      : "Waiting for judgment"}
-              </span>
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* 3. Footer Section */}
-      <div className="flex items-center justify-between pt-1">
-        <div className="flex items-center gap-1.5">
-          <Coins size={14} className="text-[#8c8fff]" />
-          <span className="font-manrope font-bold text-xs text-[#8c8fff]">
-            {dispute.stake} USDC
-          </span>
+          )}
         </div>
-
-        {isReadyForWithdrawal ? (
-          <button
-            onClick={handleWithdraw}
-            className="flex items-center gap-2 bg-[#1b1c23] text-white px-5 py-2.5 rounded-full font-manrope font-bold text-xs hover:bg-[#2c2d33] transition-all shadow-md active:scale-95"
-          >
-            <Wallet size={12} />
-            <span>Withdraw</span>
-          </button>
-        ) : (
-          <button
-            onClick={handleReadDispute}
-            className="flex items-center gap-2 bg-[#8c8fff] text-white px-5 py-2.5 rounded-full font-manrope font-bold text-xs hover:bg-[#7a7dd6] transition-all shadow-md shadow-[#8c8fff]/20 active:scale-95 group-hover:scale-105"
-          >
-            <span>Read Dispute</span>
-            <ArrowRight size={12} />
-          </button>
-        )}
       </div>
     </div>
   );

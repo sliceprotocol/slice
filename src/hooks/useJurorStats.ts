@@ -1,14 +1,16 @@
 import { useReadContract, useAccount } from "wagmi";
-import { SLICE_ABI, SLICE_ADDRESS } from "@/config/contracts";
+import { SLICE_ABI } from "@/config/contracts";
+import { useContracts } from "@/hooks/useContracts";
 import { formatUnits } from "viem";
 import { useStakingToken } from "./useStakingToken";
 
 export function useJurorStats() {
   const { address } = useAccount();
   const { decimals } = useStakingToken();
+  const { sliceContract } = useContracts();
 
   const { data, isLoading, refetch } = useReadContract({
-    address: SLICE_ADDRESS,
+    address: sliceContract,
     abi: SLICE_ABI,
     functionName: "jurorStats", // New mapping on contract
     args: address ? [address] : undefined,

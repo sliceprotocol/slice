@@ -7,6 +7,7 @@ export interface CreateDisputeForm {
   title: string;
   category: string;
   jurorsRequired: number;
+  deadlineHours: number;
   claimerName: string;
   claimerAddress: string;
   defenderName: string;

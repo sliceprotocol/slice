@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { Terminal, Bug, Shield } from "lucide-react";
+import { Terminal, Bug, Shield, BookOpen, ExternalLink } from "lucide-react";
 
 export const SettingsView = () => {
   const router = useRouter();
@@ -58,33 +58,59 @@ export const SettingsView = () => {
       {/* About Section */}
       <div className="flex flex-col gap-3">
         <h3 className="font-manrope font-extrabold text-gray-800 uppercase tracking-wide ml-1 text-sm">
-          About
+          About Slice
         </h3>
-        <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm flex flex-col gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center text-white">
-              <Shield className="w-4 h-4" />
-            </div>
-            <div>
-              <div className="text-sm font-bold text-[#1b1c23]">
-                Slice Protocol
+
+        <div className="bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm">
+          {/* Card Header & Description */}
+          <div className="p-5 border-b border-gray-100">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center text-white shrink-0 shadow-md">
+                <Shield className="w-5 h-5" />
               </div>
-              <div className="text-[10px] font-mono text-gray-400">
-                v1.0.2-beta
+              <div>
+                <div className="text-base font-extrabold text-[#1b1c23]">
+                  Slice Protocol
+                </div>
+                <div className="text-[11px] font-mono text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded-md inline-block mt-0.5">
+                  v0.0.1-beta
+                </div>
               </div>
             </div>
+            <p className="text-sm text-gray-500 leading-relaxed font-medium">
+              Slice is the <strong>neutral resolution layer</strong> for the
+              internet. We leverage random juror selection and crypto-economic
+              stakes to ensure fair, trustless, and verifiable rulings for any
+              platform.
+            </p>
           </div>
-          <p className="text-xs text-gray-500 leading-relaxed">
-            Slice is a decentralized dispute resolution protocol running on
-            Base. It uses VRF for juror selection and Commit-Reveal for secure
-            voting.
-          </p>
+
+          {/* Docs Link */}
+          <a
+            href="https://docs.slicehub.xyz"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors text-left group cursor-pointer"
+          >
+            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
+              <BookOpen className="w-5 h-5" />
+            </div>
+            <div className="flex-1">
+              <span className="block text-sm font-bold text-[#1b1c23]">
+                Read the Documentation
+              </span>
+              <span className="text-[10px] text-gray-400">
+                Learn how the protocol works
+              </span>
+            </div>
+            <ExternalLink className="w-4 h-4 text-gray-300 group-hover:text-[#1b1c23] transition-colors" />
+          </a>
         </div>
       </div>
 
       <div className="text-center mt-4">
         <span className="text-[10px] font-bold text-gray-300 uppercase tracking-widest">
-          Built for Hackathons
+          Slice - New standard for justice
         </span>
       </div>
     </div>

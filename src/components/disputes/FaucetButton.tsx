@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { useAccount, useWriteContract } from "wagmi";
 import { parseUnits } from "viem";
 import { Droplets, Loader2 } from "lucide-react";

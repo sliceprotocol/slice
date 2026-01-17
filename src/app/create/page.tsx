@@ -56,6 +56,7 @@ export default function CreateDisputePage() {
     title: "",
     category: "General",
     jurorsRequired: 3,
+    deadlineHours: 96,
     claimerName: "",
     claimerAddress: "",
     defenderName: "",
@@ -167,6 +168,7 @@ export default function CreateDisputePage() {
         formData.category,
         disputePayload,
         formData.jurorsRequired,
+        formData.deadlineHours,
       );
 
       if (success) {

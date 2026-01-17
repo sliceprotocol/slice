@@ -7,6 +7,10 @@ import { Geist } from "next/font/google";
 import localFont from "next/font/local";
 import { BottomNavigation } from "@/components/layout/BottomNavigation";
 import { ConsoleOverlay } from "@/components/debug/ConsoleOverlay";
+import { getTenantFromHost, Tenant } from "@/config/tenant";
+import { beexoConfig } from "@/config/beexoConfig";
+import { webConfig } from "@/config";
+import { cookieToInitialState } from "wagmi";
 
 export const metadata: Metadata = {
   title: "Slice",
@@ -37,17 +41,30 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const headersData = await headers();
-  const cookies = headersData.get("cookie");
+  // 1. Server-Side Detection
+  const headersList = await headers();
+  const host = headersList.get("host"); // e.g. "beexo.slicehub.xyz"
+  const tenant = getTenantFromHost(host);
+
+  // Use headersList, not headersData
+  const cookies = headersList.get("cookie");
+
+  // Ensure Tenant is imported so Tenant.BEEXO works
+  const initialState = cookieToInitialState(
+    tenant === Tenant.BEEXO ? beexoConfig : webConfig,
+    cookies,
+  );
 
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased flex justify-center min-h-screen bg-gray-100`}
       >
-        <ContextProvider cookies={cookies}>
+        {/* Pass initialState, NOT cookies */}
+        <ContextProvider tenant={tenant} initialState={initialState}>
           <div className="w-full max-w-[430px] min-h-screen bg-white shadow-2xl relative flex flex-col">
             <div className="flex-1 flex flex-col pb-[70px]">{children}</div>
+
             <BottomNavigation />
             <ConsoleOverlay />
           </div>

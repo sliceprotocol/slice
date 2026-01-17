@@ -1,11 +1,5 @@
 import React, { useState } from "react";
-import {
-  Calendar,
-  Maximize2,
-  Mic,
-  PlayCircle,
-  Image as ImageIcon
-} from "lucide-react";
+import { Calendar, Maximize2, Mic, PlayCircle } from "lucide-react";
 
 export type EvidenceType = "audio" | "video" | "image";
 
@@ -74,12 +68,11 @@ export const UniversalEvidenceCard: React.FC<UniversalEvidenceCardProps> = ({
   return (
     <div className="bg-white rounded-[18px] p-0 w-[280px] shrink-0 flex flex-col overflow-hidden box-border border border-gray-100 shadow-sm">
       <div className="relative w-full h-[200px] overflow-hidden bg-[#f5f6f9] flex items-center justify-center group">
-
         {/* Thumbnail / Image */}
         {evidence.type === "video" && !evidence.thumbnail ? (
-           <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-             <PlayCircle className="w-10 h-10 text-gray-400" />
-           </div>
+          <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+            <PlayCircle className="w-10 h-10 text-gray-400" />
+          </div>
         ) : (
           <img
             src={evidence.thumbnail || evidence.url}
@@ -90,11 +83,11 @@ export const UniversalEvidenceCard: React.FC<UniversalEvidenceCardProps> = ({
 
         {/* Play Icon Overlay (Video only) */}
         {evidence.type === "video" && (
-           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-             <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30 shadow-lg">
-                <PlayCircle className="w-8 h-8 text-[#1b1c23] fill-white" />
-             </div>
-           </div>
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30 shadow-lg">
+              <PlayCircle className="w-8 h-8 text-[#1b1c23] fill-white" />
+            </div>
+          </div>
         )}
 
         {/* Fullscreen Button */}
@@ -118,7 +111,8 @@ export const UniversalEvidenceCard: React.FC<UniversalEvidenceCardProps> = ({
       <div className="flex items-center gap-1.5 bg-[#f5f6f9] px-4 py-2 font-manrope font-semibold text-[10px] text-[#31353b] tracking-[-0.2px] mt-auto">
         <Calendar className="w-2.5 h-2.5 text-[#31353b]" />
         <span>
-          {evidence.type === "video" ? "Video recorded" : "Photo taken"}: {evidence.uploadDate}
+          {evidence.type === "video" ? "Video recorded" : "Photo taken"}:{" "}
+          {evidence.uploadDate}
         </span>
       </div>
     </div>

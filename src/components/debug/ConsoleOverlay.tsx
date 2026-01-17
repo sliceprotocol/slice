@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
-import { X, Trash2, Minimize2, Maximize2 } from "lucide-react";
+import { useEffect, useState, useRef } from "react";
+import { X, Trash2, Minimize2, Maximize2, Copy } from "lucide-react";
 
 export const ConsoleOverlay = () => {
   const [logs, setLogs] = useState<
@@ -69,6 +69,30 @@ export const ConsoleOverlay = () => {
     };
   }, []);
 
+  // --- NEW: Handle Copy Logic ---
+  const handleCopyLogs = () => {
+    if (logs.length === 0) return;
+
+    // Format logs into a readable string
+    const logText = logs
+      .map((log) => `[${log.time}] [${log.type.toUpperCase()}]: ${log.message}`)
+      .join("\n----------------------------------------\n");
+
+    navigator.clipboard
+      .writeText(logText)
+      .then(() => {
+        // You can add a toast notification here if you like
+        // toast.success("Logs copied to clipboard");
+
+        // Temporarily log a system message to indicate success
+        // (We use originalLog to avoid recursive loop if we were logging directly)
+        originalLog.current("✅ System: Logs copied to clipboard");
+      })
+      .catch((err) => {
+        originalError.current("Failed to copy logs:", err);
+      });
+  };
+
   if (!isOpen) {
     return null;
   }
@@ -87,12 +111,27 @@ export const ConsoleOverlay = () => {
           Embedded Debugger ({logs.length})
         </span>
         <div className="flex gap-4">
-          <button onClick={() => setLogs([])}>
+          {/* --- NEW: Copy Button --- */}
+          <button
+            onClick={handleCopyLogs}
+            title="Copy logs to clipboard"
+            className="hover:text-blue-400 transition-colors"
+          >
+            <Copy size={14} />
+          </button>
+
+          <button
+            onClick={() => setLogs([])}
+            title="Clear logs"
+            className="hover:text-red-400 transition-colors"
+          >
             <Trash2 size={14} />
           </button>
+
           <button onClick={() => setIsMinimized(!isMinimized)}>
             {isMinimized ? <Maximize2 size={14} /> : <Minimize2 size={14} />}
           </button>
+
           <button onClick={() => setIsOpen(false)}>
             <X size={14} />
           </button>

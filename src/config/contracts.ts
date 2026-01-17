@@ -20,4 +20,4 @@ export const getContractsForChain = (chainId: number) => {
 import { sliceAbi } from "@/contracts/slice-abi";
 export const SLICE_ABI = sliceAbi;
 // Default to the default chain's address for static hooks
-export const SLICE_ADDRESS = DEFAULT_CHAIN.contracts.slice as `0x${string}`;
+// export const SLICE_ADDRESS = DEFAULT_CHAIN.contracts.slice as `0x${string}`;

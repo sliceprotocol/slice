@@ -1,11 +1,14 @@
 import { useReadContract, useReadContracts } from "wagmi";
-import { SLICE_ABI, SLICE_ADDRESS } from "@/config/contracts";
+import { SLICE_ABI } from "@/config/contracts";
 import { erc20Abi } from "viem";
+import { useContracts } from "./useContracts";
 
 export function useStakingToken() {
+  const { sliceContract } = useContracts();
+
   // Fetch the address from the Slice contract
   const { data: tokenAddress } = useReadContract({
-    address: SLICE_ADDRESS,
+    address: sliceContract,
     abi: SLICE_ABI,
     functionName: "stakingToken",
   });

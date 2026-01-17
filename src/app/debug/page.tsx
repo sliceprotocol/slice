@@ -17,7 +17,8 @@ import { usePayDispute } from "@/hooks/usePayDispute";
 import { getVoteData } from "@/util/votingStorage";
 import { useExecuteRuling } from "@/hooks/useExecuteRuling";
 import { usePublicClient, useAccount, useWriteContract } from "wagmi";
-import { SLICE_ABI, SLICE_ADDRESS } from "@/config/contracts";
+import { SLICE_ABI } from "@/config/contracts";
+import { useContracts } from "@/hooks/useContracts";
 import { GlobalStateCard } from "@/components/debug/GlobalStateCard";
 import { DisputeInspector } from "@/components/debug/DisputeInspector";
 import { CryptoToolsCard } from "@/components/debug/CryptoToolsCard";
@@ -30,6 +31,7 @@ import { DebugToggle } from "@/components/debug/DebugToggle";
 export default function DebugPage() {
   const router = useRouter();
   const { address } = useAccount();
+  const { sliceContract } = useContracts();
 
   const publicClient = usePublicClient();
   const { writeContractAsync, isPending: isWriting } = useWriteContract();
@@ -57,23 +59,23 @@ export default function DebugPage() {
 
   // --- 1. Global & Context Fetching ---
   const refreshGlobalState = useCallback(async () => {
-    if (!publicClient || !address) return;
+    if (!publicClient || !address || !sliceContract) return;
     try {
       const count = (await publicClient.readContract({
-        address: SLICE_ADDRESS,
+        address: sliceContract,
         abi: SLICE_ABI,
         functionName: "disputeCount",
       })) as bigint;
 
       const userDisputeIds = (await publicClient.readContract({
-        address: SLICE_ADDRESS,
+        address: sliceContract,
         abi: SLICE_ABI,
         functionName: "getUserDisputes",
         args: [address as `0x${string}`],
       })) as bigint[];
 
       const jurorDisputeIds = (await publicClient.readContract({
-        address: SLICE_ADDRESS,
+        address: sliceContract,
         abi: SLICE_ABI,
         functionName: "getJurorDisputes",
         args: [address as `0x${string}`],
@@ -86,7 +88,7 @@ export default function DebugPage() {
       console.error(e);
       // Fail silently for smoother UX on partial loads
     }
-  }, [publicClient, address]);
+  }, [publicClient, address, sliceContract]);
 
   useEffect(() => {
     refreshGlobalState();
@@ -94,11 +96,11 @@ export default function DebugPage() {
 
   // --- 2. Dispute Inspector Fetcher ---
   const fetchRawDispute = async () => {
-    if (!publicClient || !targetId) return;
+    if (!publicClient || !targetId || !sliceContract) return;
     setIsLoadingData(true);
     try {
       const d = (await publicClient.readContract({
-        address: SLICE_ADDRESS,
+        address: sliceContract,
         abi: SLICE_ABI,
         functionName: "disputes",
         args: [BigInt(targetId)],
@@ -112,7 +114,7 @@ export default function DebugPage() {
       try {
         if (address) {
           hasRevealed = (await publicClient.readContract({
-            address: SLICE_ADDRESS,
+            address: sliceContract,
             abi: SLICE_ABI,
             functionName: "hasRevealed",
             args: [BigInt(targetId), address as `0x${string}`],
@@ -154,8 +156,8 @@ export default function DebugPage() {
         hasRevealedOnChain: hasRevealed,
       });
 
-      if (address) {
-        const stored = getVoteData(SLICE_ADDRESS, targetId, address);
+      if (address && sliceContract) {
+        const stored = getVoteData(sliceContract, targetId, address);
         setLocalStorageData(stored);
       }
     } catch (e) {
@@ -170,13 +172,13 @@ export default function DebugPage() {
   // --- 3. Action Handlers ---
   const handleQuickCreate = async () => {
     if (!address) return toast.error("Connect wallet");
-    if (!SLICE_ADDRESS) return toast.error("Contract address missing");
+    if (!sliceContract) return toast.error("Contract address missing");
 
     try {
       toast.info("Sending custom createDispute tx...");
 
       const hash = await writeContractAsync({
-        address: SLICE_ADDRESS,
+        address: sliceContract,
         abi: SLICE_ABI,
         functionName: "createDispute",
         account: address, // Explicitly pass the account
