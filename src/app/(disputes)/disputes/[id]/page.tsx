@@ -7,6 +7,7 @@ import { PaginationDots } from "@/components/dispute-overview/PaginationDots";
 import { useGetDispute } from "@/hooks/useGetDispute";
 import { usePageSwipe } from "@/hooks/usePageSwipe";
 import { shortenAddress } from "@/util/wallet";
+import { DISPUTE_STATUS } from "@/config/constants";
 import {
   Loader2,
   Clock,
@@ -33,21 +34,26 @@ export default function DisputeOverviewPage() {
   });
 
   // Calculate winner logic
-  const isFinished = dispute?.status === 3;
+  const isFinished = dispute?.status === DISPUTE_STATUS.RESOLVED;
   const winnerAddress = dispute?.winner?.toLowerCase();
 
   // Helper to get formatted data
+  const statusLabels: Record<number, string> = {
+    [DISPUTE_STATUS.CREATED]: "Created",
+    [DISPUTE_STATUS.COMMIT]: "Commit",
+    [DISPUTE_STATUS.REVEAL]: "Reveal",
+    [DISPUTE_STATUS.RESOLVED]: "Executed",
+  };
+
   const displayDispute = dispute
     ? {
         id: dispute.id.toString(),
         title: dispute.title || `Dispute #${dispute.id}`,
         category: dispute.category,
-        status:
-          ["Created", "Commit", "Reveal", "Executed"][dispute.status] ||
-          "Unknown",
+        status: statusLabels[dispute.status] || "Unknown",
         claimer: {
           name: dispute.claimerName || dispute.claimer,
-          // FIX: Pass the final string to shortenAddress.
+          // Pass the final string to shortenAddress.
           // It will detect if it's an address and shorten it, or leave it alone if it's a real name.
           shortName: shortenAddress(dispute.claimerName || dispute.claimer),
           avatar: "/images/profiles-mockup/profile-1.jpg",
@@ -56,7 +62,7 @@ export default function DisputeOverviewPage() {
         },
         defender: {
           name: dispute.defenderName || dispute.defender,
-          // FIX: Same here for defender
+          // Same here for defender
           shortName: shortenAddress(dispute.defenderName || dispute.defender),
           avatar: "/images/profiles-mockup/profile-2.jpg",
           isWinner:
