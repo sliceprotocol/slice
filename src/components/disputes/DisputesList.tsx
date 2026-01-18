@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { DisputeListView } from "./DisputeListView";
 import { useAccount } from "wagmi";
 import ConnectButton from "../ConnectButton";
-import { useDisputeList } from "@/hooks/useDisputeList";
+import { useDisputeList } from "@/hooks/disputes/useDisputeList";
 
 export const DisputesList: React.FC = () => {
   const router = useRouter();

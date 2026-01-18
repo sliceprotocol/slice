@@ -15,10 +15,10 @@ export default [
       "build/**",
       "node_modules/**",
       "dist/**",
-      "public/**",
       "*.config.{js,ts,mjs}",
       "contracts/**",
       "scripts/**",
+      "public/**",
       "test/**",
     ],
   },
@@ -62,15 +62,13 @@ export default [
       "react/react-in-jsx-scope": "off",
       "react/no-unescaped-entities": "off",
       "react-hooks/exhaustive-deps": "warn",
-      "react-hooks/set-state-in-effect": "warn",
+      "react-hooks/set-state-in-effect": "warn", // Allow setState in effects for now
+
+      "no-unused-vars": "off", // Disable the base JS rule
 
       // TypeScript rules
       "@typescript-eslint/no-explicit-any": "off",
-
-      // CRITICAL FIX HERE:
-      "no-unused-vars": "off", // Disable the base JS rule
       "@typescript-eslint/no-unused-vars": [
-        // Enable the TS rule as warn
         "warn",
         {
           argsIgnorePattern: "^_",
@@ -79,6 +77,7 @@ export default [
         },
       ],
 
+      // Disable no-undef for TypeScript files (TypeScript handles this)
       "no-undef": "off",
     },
   },

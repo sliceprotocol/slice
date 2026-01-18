@@ -1,4 +1,5 @@
 import { useRouter } from "next/navigation";
+import { DISPUTE_STATUS } from "@/config/constants";
 import {
   Wallet,
   CheckCircle2,
@@ -16,7 +17,7 @@ import {
   Lock,
   Archive,
 } from "lucide-react";
-import type { Dispute } from "@/hooks/useDisputeList";
+import type { Dispute } from "@/hooks/disputes/useDisputeList";
 import { cn } from "@/lib/utils";
 
 // Helper to get Lucide icon component based on category string
@@ -64,20 +65,21 @@ export const DisputeCard = ({ dispute }: { dispute: DisputeUI }) => {
   };
 
   // Status mapping
-  const isReveal = dispute.status === 2;
-  const isFinished = dispute.status === 3;
+  // Status mapping
+  const isReveal = dispute.status === DISPUTE_STATUS.REVEAL;
+  const isFinished = dispute.status === DISPUTE_STATUS.RESOLVED;
   const isReadyForWithdrawal =
-    dispute.status === 2 && dispute.phase === "WITHDRAW";
+    dispute.status === DISPUTE_STATUS.REVEAL && dispute.phase === "WITHDRAW";
 
   const myVote = dispute.voters?.find((v) => v.isMe)?.vote;
 
   return (
     <div
       onClick={handleReadDispute}
-      className="group relative bg-white rounded-[24px] p-5 border border-gray-200 shadow-md transition-all duration-300 hover:shadow-xl hover:border-[#8c8fff]/40 cursor-pointer overflow-hidden active:scale-[0.99]"
+      className="group relative bg-white rounded-3xl p-5 border border-gray-200 shadow-md transition-all duration-300 hover:shadow-xl hover:border-[#8c8fff]/40 cursor-pointer overflow-hidden active:scale-[0.99]"
     >
       {/* Hover Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#8c8fff]/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+      <div className="absolute inset-0 bg-linear-to-br from-[#8c8fff]/3 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
 
       <div className="relative z-10 flex flex-col gap-4">
         {/* --- Top Row: Category & Stake --- */}

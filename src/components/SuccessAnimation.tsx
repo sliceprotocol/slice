@@ -1,10 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import Lottie from "lottie-react";
-import styles from "./SuccessAnimation.module.css";
 
 // Load animation data dynamically
 const loadAnimationData = async () => {
-  // Encode the filename part to handle the space in "success confetti.json"
   const filename = encodeURIComponent("success confetti.json");
   const response = await fetch(`/images/category-amount/${filename}`);
   if (!response.ok) {
@@ -18,55 +16,49 @@ interface SuccessAnimationProps {
 }
 
 export const SuccessAnimation: React.FC<SuccessAnimationProps> = ({
-  onComplete,
-}) => {
+                                                                    onComplete,
+                                                                  }) => {
   const lottieRef = useRef<any>(null);
   const [animationData, setAnimationData] = useState<any>(null);
 
   useEffect(() => {
     void loadAnimationData()
-      .then((data) => {
-        setAnimationData(data);
-      })
-      .catch((error) => {
-        console.error("Failed to load animation:", error);
-      });
+        .then((data) => setAnimationData(data))
+        .catch((error) => console.error("Failed to load animation:", error));
   }, []);
 
   useEffect(() => {
     if (!animationData) return;
 
-    // Calculate animation duration: op (180 frames) / fr (60 fps) = 3 seconds
-    const animationDuration = 3000;
-
+    // 3 seconds duration
     const timer = setTimeout(() => {
       onComplete();
-    }, animationDuration);
+    }, 3000);
 
-    return () => {
-      clearTimeout(timer);
-    };
+    return () => clearTimeout(timer);
   }, [animationData, onComplete]);
 
+  // Loading State
   if (!animationData) {
     return (
-      <div className={styles.container}>
-        <div className={styles.animationWrapper}>Loading...</div>
-      </div>
+        <div className="fixed inset-0 z-9999 flex items-center justify-center bg-black/70 animate-in fade-in duration-300">
+          <div className="text-white font-manrope font-bold">Loading...</div>
+        </div>
     );
   }
 
+  // Animation State
   return (
-    <div className={styles.container}>
-      <div className={styles.animationWrapper}>
-        <Lottie
-          lottieRef={lottieRef}
-          animationData={animationData}
-          loop={false}
-          autoplay={true}
-          className={styles.animation}
-        />
+      <div className="fixed inset-0 z-9999 flex items-center justify-center bg-black/70 animate-in fade-in duration-300">
+        <div className="w-full h-full max-w-150 max-h-150 flex items-center justify-center">
+          <Lottie
+              lottieRef={lottieRef}
+              animationData={animationData}
+              loop={false}
+              autoplay={true}
+              className="w-full h-full"
+          />
+        </div>
       </div>
-    </div>
   );
 };

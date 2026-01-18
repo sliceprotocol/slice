@@ -14,7 +14,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import type { Dispute } from "@/hooks/useDisputeList";
+import type { Dispute } from "@/hooks/disputes/useDisputeList";
 
 // Categories matching your Create Dispute options
 const FILTER_CATEGORIES = [

@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { useSliceConnect } from "@/hooks/useSliceConnect";
+import { useSliceConnect } from "@/hooks/core/useSliceConnect";
 import { useAccount } from "wagmi";
 import { toast } from "sonner";
 import { Loader2, Copy, Check, Wallet, LogOut, User } from "lucide-react";

@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { AVAILABLE_AVATARS } from "@/config/contacts";
-import { useAddressBook } from "@/hooks/useAddressBook";
+import { useAddressBook } from "@/hooks/user/useAddressBook";
 import { cn } from "@/lib/utils";
 
 export function AddContactDialog({

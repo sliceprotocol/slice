@@ -3,8 +3,8 @@
 import React, { useState } from "react";
 import { Loader2, X, Scan, ArrowLeft } from "lucide-react";
 import { Scanner } from "@yudiel/react-qr-scanner";
-import { useSendFunds } from "@/hooks/useSendFunds";
-import { useStakingToken } from "@/hooks/useStakingToken";
+import { useSendFunds } from "@/hooks/actions/useSendFunds";
+import { useStakingToken } from "@/hooks/core/useStakingToken";
 import { toast } from "sonner";
 
 interface SendModalProps {

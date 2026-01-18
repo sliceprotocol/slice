@@ -30,10 +30,10 @@ export const DisputeInfoCard: React.FC<DisputeInfoCardProps> = ({
   dispute,
 }) => {
   return (
-    <div className="bg-white rounded-[18px] p-[22px] mt-4 mx-[19px] flex flex-col gap-5 box-border">
+    <div className="bg-white rounded-[18px] p-5.5 mt-4 mx-4.5 flex flex-col gap-5 box-border">
       {/* Header with logo and title */}
       <div className="flex items-start gap-3">
-        <div className="w-[55px] h-[55px] rounded-lg bg-[#f5f6f9] flex items-center justify-center shrink-0 overflow-hidden">
+        <div className="w-14 h-14 rounded-lg bg-[#f5f6f9] flex items-center justify-center shrink-0 overflow-hidden">
           {dispute.logo ? (
             <img
               src={dispute.logo}

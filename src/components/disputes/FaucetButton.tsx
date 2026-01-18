@@ -4,7 +4,7 @@ import { useAccount, useWriteContract } from "wagmi";
 import { parseUnits } from "viem";
 import { Droplets, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { useStakingToken } from "@/hooks/useStakingToken"; // Reuse your existing hook
+import { useStakingToken } from "@/hooks/core/useStakingToken"; // Reuse your existing hook
 
 const MINT_ABI = [
   {

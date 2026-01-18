@@ -4,7 +4,7 @@ import React, { useState, useMemo } from "react";
 import { useAccount } from "wagmi";
 import { useRouter } from "next/navigation";
 import { RefreshCw, ArrowDownCircle, Send, QrCode } from "lucide-react";
-import { useTokenBalance } from "@/hooks/useTokenBalance";
+import { useTokenBalance } from "@/hooks/core/useTokenBalance";
 import { SendModal } from "./SendModal";
 import { ReceiveModal } from "./ReceiveModal";
 import { FaucetButton } from "./FaucetButton";
