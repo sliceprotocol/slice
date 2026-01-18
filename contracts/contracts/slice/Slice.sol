@@ -1,22 +1,6 @@
 pragma solidity ^0.8.19;
 
-// TODO:
-// - Add Min and Max stake as deployment parameters
-// - Add Open Zeppelin standard for upgradable logic
-interface IERC20 {
-    function transfer(
-        address recipient,
-        uint256 amount
-    ) external returns (bool);
-
-    function transferFrom(
-        address sender,
-        address recipient,
-        uint256 amount
-    ) external returns (bool);
-
-    function balanceOf(address account) external view returns (uint256);
-}
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract Slice {
     // --- Enums & Structs ---
@@ -101,11 +85,7 @@ contract Slice {
     // --- Events ---
     event DisputeCreated(uint256 indexed id, address claimer, address defender);
     event FundsDeposited(uint256 indexed id, address role, uint256 amount);
-    event EvidenceSubmitted(
-        uint256 indexed id,
-        address indexed party,
-        string ipfsHash
-    );
+    event EvidenceSubmitted(uint256 indexed id, address indexed party, string ipfsHash);
     event JurorJoined(uint256 indexed id, address juror);
     event StatusChanged(uint256 indexed id, DisputeStatus newStatus);
     event VoteCommitted(uint256 indexed id, address juror);
@@ -118,14 +98,9 @@ contract Slice {
     }
 
     // --- Logic ---
-    function createDispute(
-        DisputeConfig calldata _config
-    ) external returns (uint256) {
+    function createDispute(DisputeConfig calldata _config) external returns (uint256) {
         require(msg.sender != _config.defender, "Self-dispute not allowed");
-        require(
-            _config.claimer != _config.defender,
-            "Claimer cannot be Defender"
-        );
+        require(_config.claimer != _config.defender, "Claimer cannot be Defender");
 
         disputeCount++;
         uint256 id = disputeCount;
@@ -160,18 +135,9 @@ contract Slice {
     function submitEvidence(uint256 _id, string calldata _ipfsHash) external {
         Dispute storage d = disputeStore[_id];
         require(d.status != DisputeStatus.Finished, "Dispute finished");
-        require(
-            d.status != DisputeStatus.Reveal,
-            "Evidence closed (Reveal phase)"
-        );
-        require(
-            block.timestamp <= d.evidenceDeadline,
-            "Evidence deadline passed"
-        );
-        require(
-            msg.sender == d.claimer || msg.sender == d.defender,
-            "Only parties can submit"
-        );
+        require(d.status != DisputeStatus.Reveal, "Evidence closed (Reveal phase)");
+        require(block.timestamp <= d.evidenceDeadline, "Evidence deadline passed");
+        require(msg.sender == d.claimer || msg.sender == d.defender, "Only parties can submit");
 
         emit EvidenceSubmitted(_id, msg.sender, _ipfsHash);
     }
@@ -183,16 +149,12 @@ contract Slice {
     }
 
     // Get all disputes for a Juror (For "My Votes" page)
-    function getJurorDisputes(
-        address _user
-    ) external view returns (uint256[] memory) {
+    function getJurorDisputes(address _user) external view returns (uint256[] memory) {
         return jurorDisputes[_user];
     }
 
     // Get all disputes for a Claimer/Defender (For "Profile" page)
-    function getUserDisputes(
-        address _user
-    ) external view returns (uint256[] memory) {
+    function getUserDisputes(address _user) external view returns (uint256[] memory) {
         return userDisputes[_user];
     }
 
@@ -202,6 +164,7 @@ contract Slice {
         require(d.status == DisputeStatus.Created, "Payment closed");
         require(block.timestamp <= d.payDeadline, "Deadline passed");
 
+        // Por que tienen que pagar el defender y el claimer
         if (msg.sender == d.claimer) {
             require(!d.claimerPaid, "Already paid");
             d.claimerPaid = true;
@@ -212,11 +175,7 @@ contract Slice {
             revert("Only disputants can pay");
         }
 
-        bool success = stakingToken.transferFrom(
-            msg.sender,
-            address(this),
-            d.requiredStake
-        );
+        bool success = stakingToken.transferFrom(msg.sender, address(this), d.requiredStake);
         require(success, "Transfer failed");
 
         emit FundsDeposited(_id, msg.sender, d.requiredStake);
@@ -231,20 +190,10 @@ contract Slice {
         Dispute storage d = disputeStore[_id];
 
         // 1. Validations: Ensure we are in the registration phase
-        require(
-            d.status == DisputeStatus.Created ||
-                d.status == DisputeStatus.Commit,
-            "Registration closed"
-        );
+        require(d.status == DisputeStatus.Created || d.status == DisputeStatus.Commit, "Registration closed");
         require(disputeJurors[_id].length < d.jurorsRequired, "Jury is full");
-        require(
-            block.timestamp <= d.payDeadline,
-            "Registration deadline passed"
-        );
-        require(
-            msg.sender != d.claimer && msg.sender != d.defender,
-            "Parties cannot be jurors"
-        );
+        require(block.timestamp <= d.payDeadline, "Registration deadline passed");
+        require(msg.sender != d.claimer && msg.sender != d.defender, "Parties cannot be jurors");
 
         // 2. Variable Stake Check
         require(_amount >= MIN_STAKE, "Stake too low");
@@ -253,11 +202,7 @@ contract Slice {
         totalStakePerDispute[_id] += _amount;
 
         // 3. Transfer Amount
-        bool success = stakingToken.transferFrom(
-            msg.sender,
-            address(this),
-            _amount
-        );
+        bool success = stakingToken.transferFrom(msg.sender, address(this), _amount);
         require(success, "Transfer failed");
 
         // 4. Update State
@@ -282,9 +227,7 @@ contract Slice {
             uint256 attempts = 0;
 
             while (selected == address(0) && attempts < 10) {
-                uint256 target = uint256(
-                    keccak256(abi.encodePacked(block.prevrandao, i, attempts))
-                ) % totalWeight;
+                uint256 target = uint256(keccak256(abi.encodePacked(block.prevrandao, i, attempts))) % totalWeight;
 
                 uint256 cumulative = 0;
 
@@ -326,19 +269,13 @@ contract Slice {
         require(d.status == DisputeStatus.Commit, "Not voting phase");
         require(block.timestamp <= d.commitDeadline, "Voting ended");
         require(_isJuror(_id, msg.sender), "Not a juror");
-        require(
-            commitments[_id][msg.sender] == bytes32(0),
-            "Already committed"
-        );
+        require(commitments[_id][msg.sender] == bytes32(0), "Already committed");
 
         commitments[_id][msg.sender] = _commitment;
         d.commitsCount++;
         emit VoteCommitted(_id, msg.sender);
 
-        if (
-            disputeJurors[_id].length == d.jurorsRequired &&
-            d.commitsCount == d.jurorsRequired
-        ) {
+        if (disputeJurors[_id].length == d.jurorsRequired && d.commitsCount == d.jurorsRequired) {
             d.status = DisputeStatus.Reveal;
             emit StatusChanged(_id, DisputeStatus.Reveal);
         }
@@ -346,10 +283,7 @@ contract Slice {
 
     function revealVote(uint256 _id, uint256 _vote, uint256 _salt) external {
         Dispute storage d = disputeStore[_id];
-        if (
-            d.status == DisputeStatus.Commit &&
-            block.timestamp > d.commitDeadline
-        ) {
+        if (d.status == DisputeStatus.Commit && block.timestamp > d.commitDeadline) {
             d.status = DisputeStatus.Reveal;
         }
 
@@ -376,17 +310,13 @@ contract Slice {
         Dispute storage d = disputeStore[_id];
 
         // 1. Validate Phase
-        if (
-            d.status == DisputeStatus.Commit &&
-            block.timestamp > d.commitDeadline
-        ) {
+        if (d.status == DisputeStatus.Commit && block.timestamp > d.commitDeadline) {
             d.status = DisputeStatus.Reveal;
         }
 
         // Check if reveal phase is over or everyone has revealed
         bool timePassed = block.timestamp > d.revealDeadline;
-        bool allRevealed = (d.commitsCount > 0 &&
-            d.commitsCount == d.revealsCount);
+        bool allRevealed = (d.commitsCount > 0 && d.commitsCount == d.revealsCount);
 
         require(d.status == DisputeStatus.Reveal, "Wrong phase");
         require(timePassed || allRevealed, "Cannot execute yet");
@@ -450,8 +380,7 @@ contract Slice {
             jurorStats[j].totalDisputes++;
 
             // Check if this specific juror won
-            bool isWinner = hasRevealed[_id][j] &&
-                revealedVotes[_id][j] == winningChoice;
+            bool isWinner = hasRevealed[_id][j] && revealedVotes[_id][j] == winningChoice;
 
             if (isWinner) {
                 jurorStats[j].coherentVotes++;
@@ -461,8 +390,7 @@ contract Slice {
                 // Safety check to avoid division by 0
                 if (totalWinningStake > 0) {
                     // Pro-rata share of losing pool
-                    uint256 myShare = (myStake * totalLosingStake) /
-                        totalWinningStake;
+                    uint256 myShare = (myStake * totalLosingStake) / totalWinningStake;
 
                     jurorStats[j].totalEarnings += myShare;
 

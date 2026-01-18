@@ -1,5 +1,6 @@
 import hardhatToolboxViemPlugin from "@nomicfoundation/hardhat-toolbox-viem";
 import { configVariable, defineConfig } from "hardhat/config";
+import "@openzeppelin/hardhat-upgrades";
 
 export default defineConfig({
   plugins: [hardhatToolboxViemPlugin],
