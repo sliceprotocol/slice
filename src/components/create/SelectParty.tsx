@@ -9,7 +9,7 @@ import {
   Save,
   Trash2,
 } from "lucide-react";
-import { Contact } from "@/config/contacts";
+import { Contact } from "@/config/app";
 import { useAddressBook } from "@/hooks/user/useAddressBook";
 import { cn } from "@/lib/utils";
 

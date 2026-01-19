@@ -6,7 +6,7 @@ import { useAccount, useChainId } from "wagmi";
 import { getVoteData } from "@/util/votingStorage";
 import { getContractsForChain } from "@/config/contracts";
 
-import { DISPUTE_STATUS } from "@/config/constants";
+import { DISPUTE_STATUS } from "@/config/app";
 
 export function useVote(disputeId: string) {
   const chainId = useChainId();

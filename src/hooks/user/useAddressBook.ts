@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { PRELOADED_CONTACTS, Contact } from "@/config/contacts";
+import { PRELOADED_CONTACTS, Contact } from "@/config/app";
 
 const STORAGE_KEY = "slice_address_book_v1";
 

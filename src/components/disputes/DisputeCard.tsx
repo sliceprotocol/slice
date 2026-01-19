@@ -1,5 +1,5 @@
 import { useRouter } from "next/navigation";
-import { DISPUTE_STATUS } from "@/config/constants";
+import { DISPUTE_STATUS } from "@/config/app";
 import {
   Wallet,
   CheckCircle2,

@@ -12,10 +12,16 @@ import "solidity-coverage";
 import "./tasks/accounts";
 import "./tasks/FHECounter";
 
-// Run 'npx hardhat vars setup' to see the list of variables that need to be set
+// Run 'pnpm hardhat vars setup' to see the list of variables that need to be set
 
 const MNEMONIC: string = vars.get("MNEMONIC", "test test test test test test test test test test test junk");
 const INFURA_API_KEY: string = vars.get("INFURA_API_KEY", "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz");
+
+// Base network configuration
+const DEPLOYER_PRIVATE_KEY: string = vars.get("DEPLOYER_PRIVATE_KEY", "");
+const BASE_SEPOLIA_RPC_URL: string = vars.get("BASE_SEPOLIA_RPC_URL", "https://sepolia.base.org");
+const BASE_MAINNET_RPC_URL: string = vars.get("BASE_MAINNET_RPC_URL", "https://mainnet.base.org");
+const BASESCAN_API_KEY: string = vars.get("BASESCAN_API_KEY", "");
 
 const config: HardhatUserConfig = {
   defaultNetwork: "hardhat",
@@ -25,7 +31,27 @@ const config: HardhatUserConfig = {
   etherscan: {
     apiKey: {
       sepolia: vars.get("ETHERSCAN_API_KEY", ""),
+      baseSepolia: BASESCAN_API_KEY,
+      base: BASESCAN_API_KEY,
     },
+    customChains: [
+      {
+        network: "baseSepolia",
+        chainId: 84532,
+        urls: {
+          apiURL: "https://api-sepolia.basescan.org/api",
+          browserURL: "https://sepolia.basescan.org",
+        },
+      },
+      {
+        network: "base",
+        chainId: 8453,
+        urls: {
+          apiURL: "https://api.basescan.org/api",
+          browserURL: "https://basescan.org",
+        },
+      },
+    ],
   },
   gasReporter: {
     currency: "USD",
@@ -56,6 +82,16 @@ const config: HardhatUserConfig = {
       },
       chainId: 11155111,
       url: `https://sepolia.infura.io/v3/${INFURA_API_KEY}`,
+    },
+    baseSepolia: {
+      url: BASE_SEPOLIA_RPC_URL,
+      accounts: DEPLOYER_PRIVATE_KEY ? [DEPLOYER_PRIVATE_KEY] : [],
+      chainId: 84532,
+    },
+    base: {
+      url: BASE_MAINNET_RPC_URL,
+      accounts: DEPLOYER_PRIVATE_KEY ? [DEPLOYER_PRIVATE_KEY] : [],
+      chainId: 8453,
     },
   },
   paths: {

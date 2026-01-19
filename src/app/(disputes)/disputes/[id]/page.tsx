@@ -7,7 +7,7 @@ import { PaginationDots } from "@/components/dispute-overview/PaginationDots";
 import { useGetDispute } from "@/hooks/disputes/useGetDispute";
 import { usePageSwipe } from "@/hooks/ui/usePageSwipe";
 import { shortenAddress } from "@/util/wallet";
-import { DISPUTE_STATUS } from "@/config/constants";
+import { DISPUTE_STATUS } from "@/config/app";
 import {
   Loader2,
   Clock,

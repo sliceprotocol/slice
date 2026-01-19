@@ -11,7 +11,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { AVAILABLE_AVATARS } from "@/config/contacts";
+import { AVAILABLE_AVATARS } from "@/config/app";
 import { useAddressBook } from "@/hooks/user/useAddressBook";
 import { cn } from "@/lib/utils";
 

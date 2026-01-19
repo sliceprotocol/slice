@@ -1,5 +1,5 @@
 import { useReadContract, useReadContracts } from "wagmi";
-import { DISPUTE_STATUS } from "@/config/constants";
+import { DISPUTE_STATUS } from "@/config/app";
 import { SLICE_ABI } from "@/config/contracts";
 import { useContracts } from "@/hooks/core/useContracts";
 import { transformDisputeData, type DisputeUI } from "@/util/disputeAdapter";

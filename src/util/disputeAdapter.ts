@@ -1,6 +1,6 @@
 import { formatUnits } from "viem";
 import { fetchJSONFromIPFS } from "@/util/ipfs";
-import { DISPUTE_STATUS } from "@/config/constants";
+import { DISPUTE_STATUS } from "@/config/app";
 
 export interface DisputeUI {
   id: string;
