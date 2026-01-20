@@ -1,0 +1,32 @@
+Business Source License 1.1
+
+Parameters
+
+Licensor:           Slice
+Licensed Work:      The Software and its source code, including all algorithms,
+                    logic, and interfaces contained within this repository.
+Additional Use Grant: None. (Non-commercial use, academic research, and
+                    evaluation are permitted).
+Change Date:        January 1, 2029
+Change License:     Apache License 2.0
+
+Terms
+
+1. The Licensor hereby grants you the right to copy, modify, create derivative works,
+   redistribute, and use the Licensed Work solely for non-commercial purposes.
+
+2. Any use of the Licensed Work for a commercial purpose is not allowed. A
+   "commercial purpose" is a purpose intended for or directed towards commercial
+   advantage or monetary compensation, including but not limited to the sale
+   or licensing of the software, or its use in providing a service for which
+   monetary compensation is received.
+
+3. On the Change Date, or in the event of a public announcement by Licensor of an
+   earlier adoption of the Change License, this License shall terminate, and you
+   may thereafter use the Licensed Work under the terms of the Change License.
+
+4. If you use the Licensed Work in a way that is not permitted by this License,
+   your rights under this License will terminate automatically.
+
+5. All copies of the Licensed Work and any derivative works must include the
+   copyright notice: "Copyright © 2026 [TU NOMBRE]. All rights reserved."

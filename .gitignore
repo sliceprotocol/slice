@@ -44,7 +44,6 @@ public/swe-worker-*.js
 public/workbox-*.js
 public/worker-*.js
 
-.repomixignore
 .idea/
 
 # hardhat
@@ -52,4 +51,3 @@ artifacts/
 cache/
 
 notes.txt
-contracts_old

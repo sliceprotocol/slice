@@ -1,20 +1,18 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { useChainId, useAccount } from "wagmi";
-import { useFundWallet } from "@privy-io/react-auth";
+import { useAccount } from "wagmi";
+import { useRouter } from "next/navigation";
 import { RefreshCw, ArrowDownCircle, Send, QrCode } from "lucide-react";
-import { useTokenBalance } from "@/hooks/useTokenBalance";
+import { useTokenBalance } from "@/hooks/core/useTokenBalance";
 import { SendModal } from "./SendModal";
 import { ReceiveModal } from "./ReceiveModal";
 import { FaucetButton } from "./FaucetButton";
 
 export const BalanceCard: React.FC = () => {
-  const chainId = useChainId();
+  const router = useRouter();
   const { address } = useAccount();
-
   const { formatted, loading: isLoading, refetch } = useTokenBalance();
-  const { fundWallet } = useFundWallet();
 
   const [isSendOpen, setIsSendOpen] = useState(false);
   const [isReceiveOpen, setIsReceiveOpen] = useState(false);
@@ -28,18 +26,6 @@ export const BalanceCard: React.FC = () => {
     return `${balance} USDC`;
   }, [address, isLoading, formatted]);
 
-  const handleDeposit = () => {
-    if (!address) return;
-
-    fundWallet({
-      address,
-      options: {
-        chain: { id: chainId },
-        asset: "USDC",
-      },
-    });
-  };
-
   const actionBtnClass =
     "flex flex-col items-center gap-1 bg-none border-none text-white cursor-pointer p-0 hover:opacity-80 transition-opacity group";
   const iconClass =
@@ -48,7 +34,7 @@ export const BalanceCard: React.FC = () => {
   return (
     <>
       {/* Added 'relative' here to position the refresh button */}
-      <div className="relative bg-[#1b1c23] rounded-[21px] pt-[26px] px-[28px] pb-6 mt-[50px] mx-5 w-auto min-h-[110px] flex flex-row justify-between items-end text-white box-border">
+      <div className="relative bg-[#1b1c23] rounded-[21px] pt-6 px-6 pb-6 mt-12 mx-5 w-auto min-h-28 flex flex-row justify-between items-end text-white box-border">
         {/* Top Right Refresh Button */}
         <button
           onClick={() => refetch()}
@@ -60,7 +46,7 @@ export const BalanceCard: React.FC = () => {
 
         {/* Left Section */}
         <div className="flex flex-col gap-2.5 items-start flex-1 justify-start">
-          <div className="flex flex-col gap-[9px] w-auto mb-0">
+          <div className="flex flex-col gap-2 w-auto mb-0">
             <div className="font-manrope font-semibold text-[13px] leading-none opacity-70 tracking-[-0.26px] text-white">
               Balance
             </div>
@@ -85,7 +71,10 @@ export const BalanceCard: React.FC = () => {
 
           {/* Action Row: Details + Faucet */}
           <div className="flex items-center gap-2 mt-0">
-            <button className="bg-[#8c8fff] text-[#1b1c23] border-none rounded-[12.5px] px-[18px] py-[9px] h-7 flex items-center justify-center font-manrope font-extrabold text-xs tracking-[-0.36px] cursor-pointer hover:opacity-90 whitespace-nowrap shrink-0 transition-opacity">
+            <button
+              onClick={() => router.push("/profile")}
+              className="bg-[#8c8fff] text-[#1b1c23] border-none rounded-[12.5px] px-4.5 py-2 h-7 flex items-center justify-center font-manrope font-extrabold text-xs tracking-[-0.36px] cursor-pointer hover:opacity-90 whitespace-nowrap shrink-0 transition-opacity"
+            >
               Details
             </button>
             <FaucetButton />
@@ -93,8 +82,11 @@ export const BalanceCard: React.FC = () => {
         </div>
 
         {/* Action Buttons (Right Side) */}
-        <div className="flex gap-[26px] items-center shrink-0 self-end">
-          <button className={actionBtnClass} onClick={handleDeposit}>
+        <div className="flex gap-3 items-center shrink-0 self-end">
+          <button
+            className={actionBtnClass}
+            onClick={() => setIsReceiveOpen(true)}
+          >
             <ArrowDownCircle className={iconClass} />
             <span className="font-manrope font-semibold text-xs tracking-[-0.12px] leading-none">
               Deposit

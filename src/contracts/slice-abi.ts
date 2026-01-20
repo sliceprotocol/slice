@@ -254,30 +254,6 @@ export const sliceAbi = [
     inputs: [
       {
         internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    name: "candidates",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
         name: "_id",
         type: "uint256",
       },
@@ -380,30 +356,6 @@ export const sliceAbi = [
       },
     ],
     stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    name: "disputeCandidates",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
     type: "function",
   },
   {
@@ -566,6 +518,19 @@ export const sliceAbi = [
     inputs: [
       {
         internalType: "uint256",
+        name: "_amount",
+        type: "uint256",
+      },
+    ],
+    name: "drawDispute",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
         name: "_id",
         type: "uint256",
       },
@@ -641,18 +606,19 @@ export const sliceAbi = [
     inputs: [
       {
         internalType: "uint256",
-        name: "_id",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "_amount",
+        name: "",
         type: "uint256",
       },
     ],
-    name: "joinDispute",
-    outputs: [],
-    stateMutability: "nonpayable",
+    name: "idToQueueIndex",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
     type: "function",
   },
   {
@@ -702,6 +668,25 @@ export const sliceAbi = [
       {
         internalType: "uint256",
         name: "totalEarnings",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    name: "openDisputeIds",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
         type: "uint256",
       },
     ],
@@ -769,19 +754,6 @@ export const sliceAbi = [
     type: "function",
   },
   {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "_id",
-        type: "uint256",
-      },
-    ],
-    name: "selectJurors",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
     inputs: [],
     name: "stakingToken",
     outputs: [
@@ -810,25 +782,6 @@ export const sliceAbi = [
     name: "submitEvidence",
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    name: "totalStakePerDispute",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
     type: "function",
   },
   {

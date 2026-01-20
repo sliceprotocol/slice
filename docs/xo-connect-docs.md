@@ -4,9 +4,11 @@
 
 It is ideal for mobile or web apps that need to sign messages, send transactions, or interact with smart contracts using a non-standard wallet connection method.
 
+[NPM Package](https://www.npmjs.com/package/xo-connect)
+
 ---
 
-## âœ¨ Features
+## Features
 
 - Compatible with `ethers.js` (`ethers.providers.Web3Provider`)
 - Implements common JSON-RPC methods such as:
@@ -20,7 +22,7 @@ It is ideal for mobile or web apps that need to sign messages, send transactions
 
 ---
 
-## ðŸ“¦ Installation
+## Installation
 
 ```bash
 yarn add xo-connect
@@ -30,7 +32,7 @@ npm install xo-connect
 
 ---
 
-## ðŸš€ Basic Usage
+## Basic Usage
 
 ```ts
 import { XOConnectProvider } from "xo-connect";
@@ -55,7 +57,7 @@ const tx = await signer.sendTransaction({
 
 ---
 
-## ðŸ‘¤ Accessing the Client and Currencies
+## Accessing the Client and Currencies
 
 XOConnect also allows you to access the current authenticated client and their supported currencies:
 
@@ -81,7 +83,7 @@ Each currency contains:
 
 ---
 
-## ðŸ“„ License
+## License
 
 MIT
 

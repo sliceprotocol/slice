@@ -1,40 +1,161 @@
-# Repository Guidelines
+# Slice Protocol – Developer & Agent Guidelines
 
-## Project Structure & Module Organization
+This document defines the architectural rules, development standards, and technical constraints for the Slice Protocol frontend and smart contract system.
 
-- `src/app` contains the Next.js App Router pages, layouts, and route handlers.
-- `src/components` holds shared UI components; feature-specific pieces may live in subfolders.
-- `src/contexts`, `src/hooks`, and `src/providers` centralize state, hooks, and app-level providers.
-- `src/contracts`, `src/config`, and `src/types` define on-chain integrations, configuration, and shared types.
-- `public/` hosts static assets; keep filenames stable to avoid cache busting surprises.
+---
 
-## Build, Test, and Development Commands
+## Architectural Principles
 
-- `pnpm install`: install dependencies.
-- `pnpm dev`: run the Next.js dev server (http://localhost:3000).
-- `pnpm build`: create a production build.
-- `pnpm start`: run the production server after a build.
-- `pnpm lint`: run ESLint with the Next.js config.
+### 1. Multi-Tenant Strategy Pattern
 
-## Coding Style & Naming Conventions
+This application runs across multiple environments (PWA, Beexo, Base MiniApp) using a single codebase.
 
-- TypeScript + React (`.ts`/`.tsx`) with the Next.js App Router.
-- Follow existing formatting and ESLint rules in `.eslintrc.json`; unused vars must be prefixed with `_`.
-- Component files use `PascalCase.tsx`; hooks use `useX.ts`; utilities stay in `src/lib` or `src/util`.
-- Prefer colocating small, feature-specific components in a relevant folder under `src/components`.
+> **Rule:** Do **not** use conditional logic inside UI components (e.g., `if (isBeexo)` or `if (isMiniApp)`).
 
-## Testing Guidelines
+#### Design Requirements
 
-- There is no dedicated test runner configured in `package.json`.
-- If you add tests, document the framework and add a script (e.g., `pnpm test`) in `package.json`.
+**Abstraction Layer**  
+All wallet interactions must go through a dedicated adapter layer and a single unified provider component. UI components must never talk directly to wallet SDKs or RPC providers.
 
-## Commit & Pull Request Guidelines
+**Tenant Detection**  
+Tenants are detected using request metadata (such as host, origin, or runtime signals) and resolved before any wallet or chain logic is initialized.
 
-- Commits follow Conventional Commit style: `feat:`, `fix:`, `refactor:`, etc.
-- Include a concise, scoped summary when helpful (e.g., `feat(connection): add smart wallet`).
-- PRs should include a clear description, linked issues, and screenshots or clips for UI changes.
+**Strategies**
+- **Web / PWA** → `Privy + Wagmi` (Smart Wallets via ERC-4337)
+- **Beexo** → `Wagmi` with injected `xo-connect` provider (EIP-1193)
 
-## Configuration & Secrets
+---
 
-- Copy `.env.example` to `.env.local` and set required keys
-- Never commit secrets; keep `.env.local` local to your machine.
+### 2. State Management
+
+**On-chain data**  
+Use **Wagmi v2** hooks:
+- `useReadContract`
+- `useWriteContract`
+
+Combined with **TanStack Query** for caching and synchronization.
+
+**Local state**  
+Use typed LocalStorage helpers for temporary client-side data (for example commit-reveal salts and voting metadata).
+
+**Client / Server separation**
+- `wagmi` hooks → **Client Components only** (`"use client"`)
+- Server Components → layout, static data, or configuration only
+
+---
+
+## Tech Stack & Standards
+
+- **Framework:** Next.js 16 (App Router)
+- **Blockchain interaction:** Viem + Wagmi v2
+  > Do **not** use Ethers.js.
+- **Styling:** Tailwind CSS + shadcn/ui
+  - **UI rule:** Avoid `text-sm` for body copy in embedded contexts (MiniApps)
+  - Prefer `text-base` for readability
+- **Authentication:**
+  - Privy → Web / PWA / Base
+  - Injected providers → Beexo
+
+### Required Standards
+
+- **ERC-4337** → Account Abstraction (PWA users)
+- **EIP-1193** → Provider interface (Beexo integration)
+- **EIP-712** → Typed data signing (when applicable)
+
+---
+
+## Development Workflows
+
+### 1. Running the App
+
+```bash
+# Install dependencies
+pnpm install
+
+# Start dev server
+pnpm dev
+```
+
+- **Standard mode:** http://localhost:3000
+- **Beexo simulation:**
+  - Inject a compatible provider in the browser, or
+  - Mock the `Host` header to trigger Beexo tenant detection
+
+---
+
+### 2. Smart Contract Development
+
+```bash
+cd contracts
+
+# Compile
+pnpm hardhat compile
+
+# Deploy to Base Sepolia
+pnpm hardhat deploy --network baseSepolia
+```
+
+---
+
+### 3. IPFS & Evidence Handling
+
+Dispute metadata is stored on IPFS using **Pinata**.
+
+**Rules:**
+- Always use the shared IPFS utility module provided by the application to ensure consistent metadata formatting and error handling.
+  ```
+  src/util/ipfs.ts
+  ```
+- Evidence JSON must match the `DisputeUI` interface used by the frontend to guarantee correct decoding and rendering.
+  ```
+  src/util/disputeAdapter.ts
+  ```
+
+---
+
+## Coding Conventions
+
+### Component Rules
+
+1. **Wallet-agnostic**  
+   Components must consume `useAccount` or `useSliceAccount` and never depend on connection method.
+
+2. **Strict typing**  
+   Use `DisputeUI` for all frontend dispute representations.
+
+3. **Error handling**  
+   Use `sonner` for user-facing notifications:
+   ```ts
+   toast.error("Message")
+   ```
+
+---
+
+### Commit Messages
+
+Follow **Conventional Commits**:
+
+```text
+feat(adapter): add lemon wallet support
+fix(voting): resolve salt generation issue
+style(ui): update font sizes for mobile
+chore(contracts): recompile abis
+```
+
+---
+
+## Environment Configuration
+
+> **DO NOT COMMIT SECRETS**
+
+The application requires several environment variables for:
+- Runtime mode selection (development vs production)
+- Authentication providers
+- IPFS / storage backends
+- Blockchain network configuration and contract addresses
+
+These values must be provided via your local environment configuration mechanism and deployment platform secrets.
+
+---
+
+**This file is authoritative. Any architectural change must update this document.**

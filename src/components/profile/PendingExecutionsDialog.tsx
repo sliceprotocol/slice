@@ -10,7 +10,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useMyDisputes } from "@/hooks/useMyDisputes";
+import { useMyDisputes } from "@/hooks/disputes/useMyDisputes";
 import { Button } from "@/components/ui/button";
 
 export const PendingExecutionsDialog = () => {

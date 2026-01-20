@@ -1,0 +1,61 @@
+# --- Assets & Binaries ---
+assets/
+public/
+src/app/fonts/
+*.png
+*.jpg
+*.jpeg
+*.svg
+*.ico
+*.woff
+*.woff2
+
+# --- Dev Ops & Tooling ---
+.github/
+.vscode/
+.husky/
+scripts/
+contracts/deploy/
+contracts/tasks/
+ignition/
+test/
+
+# --- Contracts Config Boilerplate ---
+.eslintignore
+.gitignore
+.prettierignore
+.prettierrc.yml
+.solcover.js
+.solhint.json
+.solhintignore
+
+# --- Config Boilerplate ---
+postcss.config.mjs
+tsconfig.json
+.eslintrc.json
+.eslintrc.yml
+eslint.config.mjs
+biome.json
+components.json
+package-lock.json
+bun.lockb
+yarn.lock
+*.backup
+
+# --- Generated / Artifacts ---
+# We keep contracts/contracts/ (Solidity) but ignore the frontend JSON ABIs
+src/contracts/
+out/
+artifacts/
+cache/
+typechain-types/
+
+# --- Frontend Components ---
+src/components/
+src/components/ui/
+src/components/icons/
+
+# --- Documentation ---
+docs/
+CONTRIBUTING.md
+LICENSE

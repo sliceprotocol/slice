@@ -1,5 +1,6 @@
 import { formatUnits } from "viem";
 import { fetchJSONFromIPFS } from "@/util/ipfs";
+import { DISPUTE_STATUS } from "@/config/app";
 
 export interface DisputeUI {
   id: string;
@@ -176,14 +177,14 @@ export async function transformDisputeData(
   let phase: DisputeUI["phase"] = "CLOSED";
   let deadline = 0;
 
-  if (status === 1) {
+  if (status === DISPUTE_STATUS.COMMIT) {
     phase = "VOTE";
     deadline = commitDeadline;
-  } else if (status === 2) {
+  } else if (status === DISPUTE_STATUS.REVEAL) {
     phase = "REVEAL";
     deadline = revealDeadline;
     if (now > deadline) phase = "WITHDRAW";
-  } else if (status === 3) {
+  } else if (status === DISPUTE_STATUS.RESOLVED) {
     phase = "CLOSED";
   }
 
@@ -192,7 +193,11 @@ export async function transformDisputeData(
   const isUrgent = diff < 86400 && diff > 0;
   const hours = Math.ceil(diff / 3600);
   const deadlineLabel =
-    status < 3 ? (diff > 0 ? `${hours}h left` : "Ended") : "Resolved";
+    status < DISPUTE_STATUS.RESOLVED
+      ? diff > 0
+        ? `${hours}h left`
+        : "Ended"
+      : "Resolved";
 
   return {
     id,
