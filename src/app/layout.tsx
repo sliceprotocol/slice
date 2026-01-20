@@ -7,6 +7,7 @@ import { Geist } from "next/font/google";
 import localFont from "next/font/local";
 import { BottomNavigation } from "@/components/layout/BottomNavigation";
 import { ConsoleOverlay } from "@/components/debug/ConsoleOverlay";
+import { JurorOnboardingGate } from "@/components/onboarding/JurorOnboardingGate";
 import { getTenantFromHost, Tenant } from "@/config/tenant";
 import { beexoConfig } from "@/adapters/beexo";
 import { webConfig } from "@/adapters/web";
@@ -65,6 +66,7 @@ export default async function RootLayout({
           <div className="w-full max-w-[430px] min-h-screen bg-white shadow-2xl relative flex flex-col">
             <div className="flex-1 flex flex-col pb-[70px]">{children}</div>
 
+            <JurorOnboardingGate />
             <BottomNavigation />
             <ConsoleOverlay />
           </div>

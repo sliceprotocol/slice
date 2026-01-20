@@ -2,13 +2,23 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { Terminal, Bug, Shield, BookOpen, ExternalLink } from "lucide-react";
+import {
+  Terminal,
+  Bug,
+  Shield,
+  BookOpen,
+  ExternalLink,
+  Sparkles,
+} from "lucide-react";
 
 export const SettingsView = () => {
   const router = useRouter();
 
   const openConsole = () =>
     window.dispatchEvent(new Event("open-debug-console"));
+
+  const openOnboarding = () =>
+    window.dispatchEvent(new Event("open-juror-onboarding"));
 
   return (
     <div className="flex flex-col gap-6 pb-20">
@@ -84,6 +94,23 @@ export const SettingsView = () => {
               platform.
             </p>
           </div>
+
+          <button
+            onClick={openOnboarding}
+            className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors text-left group cursor-pointer border-b border-gray-100"
+          >
+            <div className="w-10 h-10 rounded-xl bg-[#8c8fff]/10 flex items-center justify-center text-[#8c8fff] group-hover:scale-110 transition-transform">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <div className="flex-1">
+              <span className="block text-sm font-bold text-[#1b1c23]">
+                View Juror Onboarding
+              </span>
+              <span className="text-[10px] text-gray-400">
+                Revisit the voting flow
+              </span>
+            </div>
+          </button>
 
           {/* Docs Link */}
           <a
