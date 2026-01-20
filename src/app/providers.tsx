@@ -1,19 +1,17 @@
 "use client";
 
-import {ReactNode, useEffect} from "react";
+import { ReactNode } from "react";
 import { Tenant } from "@/config/tenant";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import {useAccount, useSwitchChain, WagmiProvider} from "wagmi";
 import { PrivyProvider } from "@privy-io/react-auth";
 import { WagmiProvider as PrivyWagmiProvider } from "@privy-io/wagmi";
 import { SmartWalletsProvider } from "@privy-io/react-auth/smart-wallets";
 import { TimerProvider } from "@/contexts/TimerContext";
-
-// Import Configs from simplified adapters
 import { beexoConfig } from "@/adapters/beexo";
 import { webConfig } from "@/adapters/web";
 import { PRIVY_APP_ID, PRIVY_CLIENT_ID } from "@/config/app";
 import { activeChains, defaultChain } from "@/config/chains";
+import { WagmiProvider } from "wagmi";
 
 const queryClient = new QueryClient();
 
@@ -23,7 +21,11 @@ interface Props {
   initialState?: any;
 }
 
-export default function ContextProvider({ children, tenant, initialState }: Props) {
+export default function ContextProvider({
+  children,
+  tenant,
+  initialState,
+}: Props) {
   // STRATEGY: BEEXO (Pure Wagmi)
   if (tenant === Tenant.BEEXO) {
     return (

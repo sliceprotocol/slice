@@ -45,7 +45,7 @@ export const GlobalStateCard: React.FC<GlobalStateCardProps> = ({
         <div className="flex flex-wrap gap-2 w-full">
           {/* 1. Button to Create Page (UI) */}
           <button
-            onClick={() => router.push("/create")}
+            onClick={() => router.push("/disputes/create")}
             className="flex items-center justify-center gap-2 px-4 py-2 bg-white border border-gray-200 text-[#1b1c23] rounded-xl font-bold text-xs hover:bg-gray-50 transition-colors shadow-sm active:scale-95"
           >
             <Plus className="w-3 h-3" />

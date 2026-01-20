@@ -61,7 +61,7 @@ export const DisputeCard = ({ dispute }: { dispute: DisputeUI }) => {
 
   const handleWithdraw = (e: React.MouseEvent) => {
     e.stopPropagation();
-    router.push(`/execute-ruling/${dispute.id}`);
+    router.push(`/disputes/${dispute.id}/execute`);
   };
 
   // Status mapping

@@ -83,7 +83,7 @@ export const PendingPaymentsDialog = () => {
             {pendingDisputes.map((dispute) => (
               <button
                 key={dispute.id}
-                onClick={() => router.push(`/pay/${dispute.id}`)}
+                onClick={() => router.push(`/disputes/${dispute.id}/pay`)}
                 className="w-full bg-white border border-gray-100 p-4 rounded-2xl shadow-sm hover:shadow-md hover:border-[#8c8fff] transition-all flex items-center justify-between group text-left"
               >
                 <div className="flex-1 min-w-0 pr-4">

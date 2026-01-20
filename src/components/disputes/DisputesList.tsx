@@ -29,7 +29,7 @@ export const DisputesList: React.FC = () => {
     <DisputeListView
       disputes={disputes}
       isLoading={isLoading}
-      onEarnClick={() => router.push("/category-amount")}
+      onEarnClick={() => router.push("/juror/stake")}
     />
   );
 };

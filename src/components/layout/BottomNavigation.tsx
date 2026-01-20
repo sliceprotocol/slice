@@ -10,27 +10,28 @@ export const BottomNavigation = () => {
 
   // 1. Define paths where we want to HIDE the global navigation
   const hideOnPaths = [
-    "/claimant-evidence",
-    "/defendant-evidence",
-    "/vote",
-    "/reveal",
-    "/join-dispute",
-    "/create",
-    "/pay",
-    "/execute-ruling",
-    "/assign-dispute",
-    "/category-amount",
-    "/loading-disputes",
-    "/disputes/",
+    "/disputes/", // Hide on all nested dispute routes (e.g., /disputes/1/vote)
+    "/juror/stake",
+    "/juror/assign",
+    "/juror/assigned",
   ];
 
   // Check if current path starts with any of the hidden paths
-  const shouldHide = hideOnPaths.some((path) => pathname?.startsWith(path));
+  // Special case: don't hide on /disputes (list page) or /disputes/create
+  const shouldHide = hideOnPaths.some((path) => {
+    if (path === "/disputes/") {
+      // Hide on /disputes/[id]/* but not on /disputes or /disputes/create
+      return pathname?.startsWith("/disputes/") && 
+             pathname !== "/disputes/create" &&
+             /^\/disputes\/\d+/.test(pathname);
+    }
+    return pathname?.startsWith(path);
+  });
 
   if (shouldHide) return null;
 
   const isHome = pathname === "/" || pathname === "/disputes";
-  const isVotes = pathname?.startsWith("/my-votes");
+  const isVotes = pathname?.startsWith("/juror/tasks");
   const isProfile = pathname?.startsWith("/profile");
 
   const navItemClass = (isActive: boolean) =>
@@ -56,8 +57,8 @@ export const BottomNavigation = () => {
         {/* Vertical Divider */}
         <div className="w-px h-4 bg-gray-200 mx-2" />
 
-        {/* My Votes */}
-        <Link href="/my-votes" className={navItemClass(isVotes)}>
+        {/* Juror Tasks */}
+        <Link href="/juror/tasks" className={navItemClass(isVotes)}>
           <div
             className={`p-2 transition-transform duration-200 ${isVotes ? "scale-105" : "group-hover:scale-105"}`}
           >

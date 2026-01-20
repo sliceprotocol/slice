@@ -67,7 +67,7 @@ export const PendingExecutionsDialog = () => {
             {pendingExecutions.map((dispute) => (
               <button
                 key={dispute.id}
-                onClick={() => router.push(`/execute-ruling/${dispute.id}`)}
+                onClick={() => router.push(`/disputes/${dispute.id}/execute`)}
                 className="w-full bg-white border border-gray-100 p-4 rounded-2xl shadow-sm hover:shadow-md hover:border-[#8c8fff] transition-all flex items-center justify-between group text-left"
               >
                 <div className="flex-1 min-w-0 pr-4">
