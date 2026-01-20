@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import Image from "next/image";
-import { ChevronRight, Search, QrCode, ScanLine, Plus, Trash2 } from "lucide-react";
+import { Search, QrCode, ScanLine, Trash2 } from "lucide-react";
 import { useAddressBook } from "@/hooks/user/useAddressBook";
 import { AddContactDialog } from "@/components/profile/AddContactDialog";
 import { Input } from "@/components/ui/input";
