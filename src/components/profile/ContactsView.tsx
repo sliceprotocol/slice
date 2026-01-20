@@ -2,14 +2,26 @@
 
 import React, { useState, useMemo } from "react";
 import Image from "next/image";
-import { ChevronRight, Search } from "lucide-react";
+import { Search, QrCode, ScanLine, Trash2 } from "lucide-react";
 import { useAddressBook } from "@/hooks/user/useAddressBook";
 import { AddContactDialog } from "@/components/profile/AddContactDialog";
 import { Input } from "@/components/ui/input";
+import { useAccount } from "wagmi";
+import { MyQRModal } from "./MyQRModal";
+import { ScanContactModal } from "./ScanContactModal";
+import { AddScannedContactDialog } from "./AddScannedContactDialog";
+import { shortenAddress } from "@/util/wallet";
 
 export const ContactsView = () => {
-  const { contacts } = useAddressBook();
+  const { address } = useAccount();
+  const { contacts, removeContact } = useAddressBook();
   const [searchTerm, setSearchTerm] = useState("");
+  
+  // Modals State
+  const [showMyQR, setShowMyQR] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
+  const [showAddScanned, setShowAddScanned] = useState(false);
+  const [scannedAddress, setScannedAddress] = useState("");
 
   const filteredContacts = useMemo(() => {
     const term = searchTerm.toLowerCase();
@@ -20,10 +32,39 @@ export const ContactsView = () => {
     );
   }, [contacts, searchTerm]);
 
+  const handleScanSuccess = (address: string) => {
+    setShowScanner(false);
+    setScannedAddress(address);
+    setShowAddScanned(true);
+  };
+
   return (
     // REMOVED: min-h-[50vh]
     // KEPT: pb-20 to ensure the floating button doesn't cover the last item
     <div className="flex flex-col gap-5 pb-20">
+      {/* 1. Action Cards */}
+      <div className="grid grid-cols-2 gap-3">
+        <button 
+          onClick={() => setShowMyQR(true)}
+          className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center gap-2 hover:bg-gray-50 transition-colors py-6"
+        >
+          <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-1">
+            <QrCode className="w-6 h-6" />
+          </div>
+          <span className="font-bold text-[#1b1c23] text-sm">My Code</span>
+        </button>
+
+        <button 
+          onClick={() => setShowScanner(true)}
+          className="bg-[#1b1c23] p-4 rounded-2xl shadow-sm flex flex-col items-center justify-center gap-2 hover:bg-[#2c2d33] transition-colors py-6 text-white"
+        >
+          <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center mb-1">
+            <ScanLine className="w-6 h-6" />
+          </div>
+          <span className="font-bold text-sm">Scan QR</span>
+        </button>
+      </div>
+
       {/* Search Bar */}
       <div className="relative">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 z-10" />
@@ -73,12 +114,18 @@ export const ContactsView = () => {
                     {c.name}
                   </div>
                   <div className="text-[10px] font-mono text-gray-400 bg-gray-50 w-fit px-1.5 py-0.5 rounded-md mt-0.5">
-                    {c.address.slice(0, 6)}...{c.address.slice(-4)}
+                    {shortenAddress(c.address)}
                   </div>
                 </div>
-                <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                  <ChevronRight className="w-4 h-4 text-gray-300" />
-                </div>
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeContact(c.address);
+                  }}
+                  className="p-2 text-gray-300 hover:text-red-500 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
               </div>
             ))}
           </div>
@@ -109,6 +156,25 @@ export const ContactsView = () => {
       <div className="sticky bottom-4 z-20">
         <AddContactDialog variant="full" />
       </div>
+
+      {/* --- Modals --- */}
+      <MyQRModal 
+        address={address} 
+        isOpen={showMyQR} 
+        onClose={() => setShowMyQR(false)} 
+      />
+
+      <ScanContactModal 
+        isOpen={showScanner} 
+        onClose={() => setShowScanner(false)} 
+        onScanSuccess={handleScanSuccess} 
+      />
+
+      <AddScannedContactDialog
+        isOpen={showAddScanned}
+        onClose={() => setShowAddScanned(false)}
+        scannedAddress={scannedAddress}
+      />
     </div>
   );
 };
