@@ -1,8 +1,7 @@
 import React from "react";
 import { UploadCloud } from "lucide-react";
 
-
-import {StepWithFilesProps} from "@/components/create/index";
+import { StepWithFilesProps } from "@/components/create/index";
 
 export const StepEvidence: React.FC<StepWithFilesProps> = ({
   data,

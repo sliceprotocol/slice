@@ -131,14 +131,14 @@ export default function BeexoPage() {
         )}
 
         {/* Debug Log Console */}
-        <div className="bg-[#1b1c23] rounded-3xl p-5 flex flex-col gap-3 min-h-[200px]">
+        <div className="bg-[#1b1c23] rounded-3xl p-5 flex flex-col gap-3 min-h-50">
           <div className="flex items-center gap-2 text-white/50 border-b border-white/10 pb-2">
             <Terminal className="w-4 h-4" />
             <span className="text-xs font-bold uppercase tracking-wider">
               Live Logs
             </span>
           </div>
-          <div className="flex-1 overflow-y-auto max-h-[200px] font-mono text-[10px] space-y-1.5 pr-2">
+          <div className="flex-1 overflow-y-auto max-h-50 font-mono text-[10px] space-y-1.5 pr-2">
             {logs.map((log, i) => (
               <div
                 key={i}

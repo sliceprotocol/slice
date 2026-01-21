@@ -2,14 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import {
-  ArrowLeft,
-  RefreshCw,
-  Terminal,
-  Search,
-  ChevronDown,
-  ChevronUp,
-} from "lucide-react";
+import { ArrowLeft, RefreshCw, Terminal, Search } from "lucide-react";
 import { toast } from "sonner";
 import { formatUnits } from "viem";
 import { useSliceVoting } from "@/hooks/voting/useSliceVoting";
