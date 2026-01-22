@@ -1,8 +1,7 @@
-// === Privy
-export const PRIVY_APP_ID = process.env.NEXT_PUBLIC_PRIVY_APP_ID!;
-export const PRIVY_CLIENT_ID = process.env.NEXT_PUBLIC_PRIVY_CLIENT_ID!;
-export const PRIVY_JWKS_ENDPOINT = process.env.NEXT_PUBLIC_PRIVY_JWKS_ENDPOINT!;
-export const PRIVY_SECRET = process.env.PRIVY_SECRET!;
+// === Supabase
+export const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+export const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+export const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
 // === Pinata
 export const PINATA_API_KEY = process.env.NEXT_PUBLIC_PINATA_API_KEY!;

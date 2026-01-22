@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { useSliceConnect } from "@/hooks/core/useSliceConnect";
 import { useAccount } from "wagmi";
+import { useSupabase } from "@/components/providers/SupabaseProvider";
 import { toast } from "sonner";
 import { Loader2, Copy, Check, Wallet, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,18 +11,26 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { LoginModal } from "@/components/auth/LoginModal";
 
 const ConnectButton = () => {
-  const { connect, disconnect } = useSliceConnect();
+  const { connect, disconnect, isAuthenticated } = useSliceConnect();
+  const { user } = useSupabase();
   const { address, status } = useAccount();
   const isConnecting = status === "connecting" || status === "reconnecting";
 
   const [copied, setCopied] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const handleConnect = async () => {
     try {
-      // Call connect(). The hook decides the strategy.
+      // If user is not authenticated, show login modal first
+      if (!isAuthenticated && !user) {
+        setShowLoginModal(true);
+        return;
+      }
+      // Call connect() to connect wallet
       await connect();
     } catch (error) {
       console.error(error);
@@ -121,21 +130,32 @@ const ConnectButton = () => {
   }
 
   return (
-    <Button
-      onClick={handleConnect}
-      disabled={isConnecting}
-      className="h-11 rounded-2xl bg-[#1b1c23] px-6 text-base font-bold text-white shadow-lg hover:bg-[#2c2d33]"
-    >
-      {isConnecting ? (
-        <>
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Connecting...
-        </>
-      ) : (
-        <>
-          <Wallet className="mr-2 h-4 w-4" /> Login
-        </>
-      )}
-    </Button>
+    <>
+      <Button
+        onClick={handleConnect}
+        disabled={isConnecting}
+        className="h-11 rounded-2xl bg-[#1b1c23] px-6 text-base font-bold text-white shadow-lg hover:bg-[#2c2d33]"
+      >
+        {isConnecting ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Connecting...
+          </>
+        ) : (
+          <>
+            <Wallet className="mr-2 h-4 w-4" /> Login
+          </>
+        )}
+      </Button>
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onSuccess={() => {
+          setShowLoginModal(false);
+          // After successful login, connect wallet
+          connect();
+        }}
+      />
+    </>
   );
 };
 

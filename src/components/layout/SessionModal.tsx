@@ -1,7 +1,7 @@
 "use client";
 
-import { useSliceAccount } from "@/hooks/core/useSliceAccount";
-import { useSliceConnect } from "@/hooks/core/useSliceConnect";
+import { useSupabase } from "@/components/providers/SupabaseProvider";
+import { useAccount } from "wagmi";
 import { Copy, LogOut, X } from "lucide-react";
 import { toast } from "sonner";
 
@@ -12,12 +12,12 @@ export const SessionModal = ({
   isOpen: boolean;
   onClose: () => void;
 }) => {
-  const { address, userId } = useSliceAccount();
-  const { disconnect } = useSliceConnect();
+  const { user, signOut } = useSupabase();
+  const { address } = useAccount();
 
-  if (!isOpen || !userId) return null;
+  if (!isOpen || !user) return null;
 
-  // Get the display address (embedded wallet or connected external wallet)
+  // Get the display address from connected wallet
   const displayAddress = address || "";
   const shortAddress = displayAddress
     ? `${displayAddress.slice(0, 6)}...${displayAddress.slice(-4)}`
@@ -29,7 +29,7 @@ export const SessionModal = ({
   };
 
   const handleLogout = async () => {
-    await disconnect();
+    await signOut();
     onClose();
   };
 
@@ -53,7 +53,7 @@ export const SessionModal = ({
             Session Info
           </h2>
           <span className="text-xs text-gray-500 font-medium">
-            Connected via Privy
+            Connected via Supabase
           </span>
         </div>
 
@@ -78,7 +78,10 @@ export const SessionModal = ({
         {/* User ID (Optional) */}
         <div className="mb-6 px-2">
           <p className="text-xs text-gray-400 truncate">
-            <span className="font-bold">Privy ID:</span> {userId}
+            <span className="font-bold">User ID:</span> {user.id}
+          </p>
+          <p className="text-xs text-gray-400 truncate mt-1">
+            <span className="font-bold">Email:</span> {user.email}
           </p>
         </div>
 
