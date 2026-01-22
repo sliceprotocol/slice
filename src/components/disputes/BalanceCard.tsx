@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from "react";
 import { useAccount } from "wagmi";
 import { useRouter } from "next/navigation";
-import { RefreshCw, ArrowDownCircle, Send, QrCode } from "lucide-react";
+import { RefreshCw, Send, QrCode } from "lucide-react";
 import { useTokenBalance } from "@/hooks/core/useTokenBalance";
 import { SendModal } from "./SendModal";
 import { ReceiveModal } from "./ReceiveModal";
@@ -34,7 +34,7 @@ export const BalanceCard: React.FC = () => {
   return (
     <>
       {/* Added 'relative' here to position the refresh button */}
-      <div className="relative bg-[#1b1c23] rounded-[21px] pt-6 px-6 pb-6 mt-12 mx-5 w-auto min-h-28 flex flex-row justify-between items-end text-white box-border">
+      <div className="relative bg-[#1b1c23] rounded-[21px] p-6 my-6 mx-4 w-auto min-h-28 flex flex-row justify-between items-end text-white box-border">
         {/* Top Right Refresh Button */}
         <button
           onClick={() => refetch()}
@@ -83,16 +83,6 @@ export const BalanceCard: React.FC = () => {
 
         {/* Action Buttons (Right Side) */}
         <div className="flex gap-3 items-center shrink-0 self-end">
-          <button
-            className={actionBtnClass}
-            onClick={() => setIsReceiveOpen(true)}
-          >
-            <ArrowDownCircle className={iconClass} />
-            <span className="font-manrope font-semibold text-xs tracking-[-0.12px] leading-none">
-              Deposit
-            </span>
-          </button>
-
           <button
             className={actionBtnClass}
             onClick={() => setIsReceiveOpen(true)}

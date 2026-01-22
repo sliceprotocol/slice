@@ -73,8 +73,8 @@ export default async function RootLayout({
       >
         {/* Pass tenant so Client Components know which Strategy to load */}
         <ContextProvider tenant={tenant} initialState={initialState}>
-          <div className="w-full max-w-108 min-h-screen bg-white shadow-2xl relative flex flex-col">
-            <div className="flex-1 flex flex-col pb-18">{children}</div>
+          <div className="w-full max-w-md min-h-screen bg-white shadow-2xl relative flex flex-col pb-24">
+            <div className="flex-1 flex flex-col">{children}</div>
 
             <BottomNavigation />
             <ConsoleOverlay />

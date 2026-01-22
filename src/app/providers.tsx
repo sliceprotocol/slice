@@ -31,34 +31,35 @@ export default function ContextProvider({
   initialState,
 }: Props) {
   // Select adapter based on tenant
+  let tenantProvider: ReactNode;
+
   switch (tenant) {
     case Tenant.PRIVY:
-      return (
+      tenantProvider = (
         <Privy.PrivyProviderTree initialState={initialState}>
-          <Privy.PrivyAuthAdapter>
-            <SharedProviders>{children}</SharedProviders>
-          </Privy.PrivyAuthAdapter>
+          <Privy.PrivyAuthAdapter>{children}</Privy.PrivyAuthAdapter>
         </Privy.PrivyProviderTree>
       );
+      break;
 
     case Tenant.BEEXO:
-      return (
+      tenantProvider = (
         <Beexo.BeexoProviderTree initialState={initialState}>
-          <Beexo.BeexoAuthAdapter>
-            <SharedProviders>{children}</SharedProviders>
-          </Beexo.BeexoAuthAdapter>
+          <Beexo.BeexoAuthAdapter>{children}</Beexo.BeexoAuthAdapter>
         </Beexo.BeexoProviderTree>
       );
+      break;
 
     case Tenant.WEB:
     default:
-      return (
+      tenantProvider = (
         <Coinbase.CoinbaseProviderTree initialState={initialState}>
           <Coinbase.CoinbaseAuthAdapter>
-            <SharedProviders>{children}</SharedProviders>
+            {children}
           </Coinbase.CoinbaseAuthAdapter>
         </Coinbase.CoinbaseProviderTree>
       );
   }
-}
 
+  return <SharedProviders>{tenantProvider}</SharedProviders>;
+}

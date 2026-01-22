@@ -55,7 +55,7 @@ export const DisputeListView: React.FC<Props> = ({
   }, [disputes, activeTab, selectedCategory]);
 
   return (
-    <div className="px-5 mt-8 w-full box-border pb-32 relative">
+    <div className="px-5 w-full box-border pb-4 relative">
       {/* Tabs */}
       <div className="flex gap-6 border-b border-gray-100 mb-6">
         {["active", "history"].map((tab) => (
