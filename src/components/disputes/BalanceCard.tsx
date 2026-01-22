@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from "react";
 import { useAccount } from "wagmi";
 import { useRouter } from "next/navigation";
-import { RefreshCw, Send, QrCode } from "lucide-react";
+import { RefreshCw, Send, ArrowDownCircle } from "lucide-react";
 import { useTokenBalance } from "@/hooks/core/useTokenBalance";
 import { SendModal } from "./SendModal";
 import { ReceiveModal } from "./ReceiveModal";
@@ -29,7 +29,7 @@ export const BalanceCard: React.FC = () => {
   const actionBtnClass =
     "flex flex-col items-center gap-1 bg-none border-none text-white cursor-pointer p-0 hover:opacity-80 transition-opacity group";
   const iconClass =
-    "shrink-0 block w-[40px] h-[40px] group-hover:opacity-80 transition-opacity stroke-1";
+    "shrink-0 block w-[42px] h-[42px] group-hover:opacity-80 transition-opacity stroke-1";
 
   return (
     <>
@@ -82,17 +82,16 @@ export const BalanceCard: React.FC = () => {
         </div>
 
         {/* Action Buttons (Right Side) */}
-        <div className="flex gap-3 items-center shrink-0 self-end">
+        <div className="flex gap-4 items-center shrink-0 self-end">
           <button
             className={actionBtnClass}
             onClick={() => setIsReceiveOpen(true)}
           >
-            <QrCode className={iconClass} />
+            <ArrowDownCircle className={iconClass} />
             <span className="font-manrope font-semibold text-xs tracking-[-0.12px] leading-none">
-              Receive
+              Deposit
             </span>
-          </button>
-
+          </button>{" "}
           <button
             className={actionBtnClass}
             onClick={() => setIsSendOpen(true)}

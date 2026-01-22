@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Gavel, User, PlusCircle, LayoutGrid } from "lucide-react";
+import { Home, Gavel, User, LayoutGrid } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const BottomNavigation = () => {
@@ -45,13 +45,6 @@ export const BottomNavigation = () => {
       activePattern: /^\/manage/,
     },
     {
-      label: "Create",
-      href: "/disputes/create",
-      icon: PlusCircle,
-      activePattern: /^\/disputes\/create/,
-      isPrimary: true,
-    },
-    {
       label: "Tasks",
       href: "/juror/tasks",
       icon: Gavel,
@@ -72,20 +65,6 @@ export const BottomNavigation = () => {
         {navItems.map((item) => {
           const isActive = item.activePattern.test(pathname || "");
           const Icon = item.icon;
-
-          if (item.isPrimary) {
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="group relative -top-4"
-              >
-                <div className="w-14 h-14 rounded-full bg-[#1b1c23] flex items-center justify-center shadow-[0_8px_20px_-4px_rgba(27,28,35,0.4)] transition-transform active:scale-95 hover:scale-105 border-4 border-white">
-                  <Icon className="w-7 h-7 text-white" strokeWidth={1.5} />
-                </div>
-              </Link>
-            );
-          }
 
           return (
             <Link
