@@ -356,6 +356,45 @@ contract SliceFHE is ZamaEthereumConfig, Ownable, ReentrancyGuard {
         emit Staked(msg.sender, _amount);
     }
 
-    // View functions
+    // ===============================
+    // =       Admin Functions       =
+    // ===============================
+
+    /// @notice Set the stake required per juror for disputes
+    /// @param _stakePerJuror The amount of tokens required per juror
+    function setStakePerJuror(uint256 _stakePerJuror) external onlyOwner {
+        stakePerJuror = _stakePerJuror;
+    }
+
+    /// @notice Transition dispute from Created to Voting status
+    /// @dev Can only be called when all required jurors have joined
+    /// @param _id The dispute ID
+    function startVotingPhase(uint256 _id) external {
+        Dispute storage dispute = disputes[_id];
+        
+        require(dispute.status == DisputeStatus.Created, "Dispute not in created status");
+        require(dispute.jurors.length == dispute.jurorsRequired, "Not all jurors joined");
+        
+        dispute.status = DisputeStatus.Voting;
+        emit StatusChanged(_id, DisputeStatus.Voting);
+    }
+
+    // ===============================
+    // =       View Functions        =
+    // ===============================
+
+    /// @notice Get the jurors for a dispute
+    /// @param _id The dispute ID
+    /// @return Array of juror addresses
+    function getJurors(uint256 _id) external view returns (address[] memory) {
+        return disputes[_id].jurors;
+    }
+
+    /// @notice Get the winners of a dispute
+    /// @param _id The dispute ID
+    /// @return Array of winner addresses
+    function getWinners(uint256 _id) external view returns (address[] memory) {
+        return disputes[_id].winners;
+    }
 }
 
