@@ -14,6 +14,5 @@ export const getContractsForChain = (chainId: number) => {
   // Return the single source of truth for the current environment
   return {
     sliceContract: appConfig.contracts.slice as `0x${string}`,
-    usdcToken: appConfig.contracts.usdc as `0x${string}`,
   };
 };

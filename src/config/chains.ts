@@ -11,9 +11,6 @@ export const appConfig = {
     slice: isProd
       ? process.env.NEXT_PUBLIC_BASE_SLICE_CONTRACT!
       : process.env.NEXT_PUBLIC_BASE_SEPOLIA_SLICE_CONTRACT!,
-    usdc: isProd
-      ? process.env.NEXT_PUBLIC_BASE_USDC_CONTRACT!
-      : process.env.NEXT_PUBLIC_BASE_SEPOLIA_USDC_CONTRACT!,
   },
 } as const;
 
