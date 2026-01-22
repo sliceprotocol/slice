@@ -1,9 +1,8 @@
 "use client";
 
-import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Gavel, User, LayoutGrid, Search } from "lucide-react";
+import { Home, Gavel, User, LayoutGrid } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const BottomNavigation = () => {
@@ -68,22 +67,22 @@ export const BottomNavigation = () => {
                 href={item.href}
                 className={cn(
                   "flex flex-col items-center justify-center gap-1 py-1 transition-all active:scale-95 min-w-[3.5rem]",
+                  // CHANGE: Use Slice Purple (#8c8fff) when active
                   isActive
-                    ? "text-[#1b1c23]"
-                    : "text-gray-400 hover:text-gray-600",
+                    ? "text-[#8c8fff]"
+                    : "text-gray-600 hover:text-gray-800",
                 )}
               >
                 <div className="relative">
                   <Icon
                     className={cn(
                       "w-6 h-6 transition-all duration-200",
-                      isActive && "fill-current scale-110",
+                      // Keep the scale animation, but removed 'fill-current'
+                      isActive && "scale-110",
                     )}
-                    strokeWidth={isActive ? 2.5 : 1.5}
+                    // Reduced active stroke width from 2.5 to 2
+                    strokeWidth={isActive ? 2 : 1.5}
                   />
-                  {isActive && (
-                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#8c8fff] rounded-full ring-2 ring-white" />
-                  )}
                 </div>
                 <span
                   className={cn(

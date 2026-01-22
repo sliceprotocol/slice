@@ -28,7 +28,7 @@ export default function DisputeOverviewPage() {
 
   const handleBack = () => router.back();
   const handleStartReview = () =>
-    router.push(`/disputes/${disputeId}/evidence/claimant`);
+    router.push(`/disputes/${disputeId}/review`);
   const handleOpenCaseFile = () => router.push(`/disputes/${disputeId}/file`);
 
   const bindSwipe = usePageSwipe({
