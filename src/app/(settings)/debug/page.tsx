@@ -11,12 +11,12 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { toast } from "sonner";
-import { formatUnits } from "viem";
+import { formatUnits, parseEther } from "viem";
 import { useSliceVoting } from "@/hooks/voting/useSliceVoting";
 import { usePayDispute } from "@/hooks/actions/usePayDispute";
 import { getVoteData } from "@/util/votingStorage";
 import { useExecuteRuling } from "@/hooks/actions/useExecuteRuling";
-import { usePublicClient, useAccount, useWriteContract } from "wagmi";
+import { usePublicClient, useAccount, useWriteContract, useSendTransaction } from "wagmi";
 import { SLICE_ABI } from "@/config/contracts";
 import { useContracts } from "@/hooks/core/useContracts";
 import { GlobalStateCard } from "@/components/debug/GlobalStateCard";
@@ -30,6 +30,7 @@ export default function DebugPage() {
 
   const publicClient = usePublicClient();
   const { writeContractAsync, isPending: isWriting } = useWriteContract();
+  const { sendTransactionAsync, isPending: isSendingNative } = useSendTransaction();
 
   const {
     commitVote,
@@ -222,6 +223,32 @@ export default function DebugPage() {
     }, 2000);
   };
 
+  const handleSendNative = async () => {
+    if (!address) return toast.error("Connect wallet");
+
+    try {
+      toast.info("Sending native token transaction...");
+      const amount = parseEther("0.0001");
+      const to = address; // Default to own address for safe debug test
+
+      const hash = await sendTransactionAsync({
+        to,
+        value: amount,
+      });
+
+      toast.success("Native token transaction sent!");
+
+      if (publicClient) {
+        toast.info("Waiting for confirmation...");
+        await publicClient.waitForTransactionReceipt({ hash });
+        toast.success("Native token transaction confirmed!");
+      }
+    } catch (e: any) {
+      console.error(e);
+      toast.error(`Send native token failed: ${e.shortMessage || e.message}`);
+    }
+  };
+
   const handleSelectId = (id: string) => {
     setTargetId(id);
     setTimeout(() => {
@@ -258,6 +285,8 @@ export default function DebugPage() {
           contractInfo={contractInfo}
           isCreating={isWriting}
           onCreate={handleQuickCreate}
+          isSendingNative={isSendingNative}
+          onSendNative={handleSendNative}
           myPartyDisputes={myPartyDisputes}
           myJurorDisputes={myJurorDisputes}
           targetId={targetId}

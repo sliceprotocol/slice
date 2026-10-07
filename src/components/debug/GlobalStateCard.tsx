@@ -1,6 +1,6 @@
 import React from "react";
 import { useRouter } from "next/navigation";
-import { Plus, RefreshCw, User, Activity } from "lucide-react";
+import { Plus, RefreshCw, User, Activity, Send } from "lucide-react";
 
 interface ContractInfo {
   count: string;
@@ -10,6 +10,8 @@ interface GlobalStateCardProps {
   contractInfo: ContractInfo;
   isCreating: boolean;
   onCreate: () => void;
+  isSendingNative?: boolean;
+  onSendNative?: () => void;
   myPartyDisputes: string[];
   myJurorDisputes: string[];
   targetId: string;
@@ -20,6 +22,8 @@ export const GlobalStateCard: React.FC<GlobalStateCardProps> = ({
   contractInfo,
   isCreating,
   onCreate,
+  isSendingNative = false,
+  onSendNative,
   myPartyDisputes,
   myJurorDisputes,
   targetId,
@@ -65,6 +69,22 @@ export const GlobalStateCard: React.FC<GlobalStateCardProps> = ({
             )}
             Quick Create
           </button>
+
+          {/* 3. Button for Send Native Token */}
+          {onSendNative && (
+            <button
+              onClick={onSendNative}
+              disabled={isSendingNative}
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-white border border-gray-200 text-[#1b1c23] rounded-xl font-bold text-xs hover:bg-gray-50 transition-colors shadow-sm active:scale-95 disabled:opacity-50"
+            >
+              {isSendingNative ? (
+                <RefreshCw className="w-3 h-3 animate-spin" />
+              ) : (
+                <Send className="w-3 h-3 text-[#8c8fff]" />
+              )}
+              Send Native Token
+            </button>
+          )}
         </div>
       </div>
 
